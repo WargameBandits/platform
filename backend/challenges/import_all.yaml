@@ -1,0 +1,286 @@
+# 워게임 유괴단 - 테스트 챌린지 일괄 Import
+# POST /api/v1/admin/challenges/import 로 업로드
+
+# === Pwn ===
+
+- title: "Basic Buffer Overflow"
+  category: pwn
+  difficulty: 1
+  points: 100
+  max_points: 300
+  min_points: 50
+  decay: 10.0
+  description: |
+    간단한 스택 버퍼 오버플로우 문제입니다.
+
+    `nc wargamebandit.is-a.dev {port}` 로 접속하세요.
+
+    바이너리를 다운로드하여 분석해보세요.
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: true
+  docker:
+    image: "challenges/pwn/example_bof"
+    port: 9001
+  files:
+    - "basic_bof"
+  hints:
+    - cost: 50
+      content: "gets() 함수의 취약점을 생각해보세요."
+    - cost: 100
+      content: "return address를 win() 함수로 덮어쓰세요."
+  tags: ["stack", "bof", "beginner"]
+  is_active: true
+
+- title: "Format String Fun"
+  category: pwn
+  difficulty: 2
+  points: 100
+  max_points: 400
+  min_points: 50
+  decay: 8.0
+  description: |
+    포맷 스트링 취약점을 이용하여 플래그를 읽어보세요.
+
+    `nc wargamebandit.is-a.dev {port}` 로 접속하세요.
+
+    **Hint:** `printf`에 사용자 입력을 직접 넣으면 어떤 일이 일어날까요?
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: true
+  docker:
+    image: "challenges/pwn/format_string"
+    port: 9001
+  files:
+    - "format_string"
+  hints:
+    - cost: 30
+      content: "스택에 있는 값을 출력해보세요. %x나 %p를 사용할 수 있습니다."
+    - cost: 70
+      content: "플래그는 스택 어딘가에 로드되어 있습니다. %s를 적절한 위치에 사용하세요."
+  tags: ["format-string", "stack", "leak"]
+  is_active: true
+
+# === Reversing ===
+
+- title: "Baby Reversing"
+  category: reversing
+  difficulty: 1
+  points: 100
+  max_points: 300
+  min_points: 50
+  decay: 10.0
+  description: |
+    간단한 패스워드 체크 프로그램입니다.
+    올바른 패스워드를 찾아 플래그를 획득하세요.
+
+    바이너리를 다운로드하여 분석해보세요.
+
+    ```
+    $ ./baby_rev
+    Enter password: ???
+    ```
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: false
+  files:
+    - "baby_rev"
+  hints:
+    - cost: 30
+      content: "strings 명령어로 바이너리 안의 문자열을 확인해보세요."
+    - cost: 70
+      content: "XOR 연산으로 각 글자를 비교하고 있습니다. 키는 0x42입니다."
+  tags: ["xor", "strings", "beginner"]
+  is_active: true
+
+# === Crypto ===
+
+- title: "XOR Me"
+  category: crypto
+  difficulty: 1
+  points: 100
+  max_points: 300
+  min_points: 50
+  decay: 10.0
+  description: |
+    단일 바이트 XOR로 암호화된 플래그를 복호화하세요.
+
+    `encrypted.bin` 파일을 다운로드하여 분석해보세요.
+    키는 1바이트(0x00~0xFF)입니다.
+
+    ```python
+    with open("encrypted.bin", "rb") as f:
+        data = f.read()
+    # data를 복호화하면 플래그가 나옵니다.
+    ```
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: false
+  files:
+    - "encrypted.bin"
+    - "encrypt.py"
+  hints:
+    - cost: 30
+      content: "플래그가 BNDT{로 시작한다는 걸 알고 있으니, 첫 바이트와 'B'를 XOR하면 키를 알 수 있습니다."
+    - cost: 50
+      content: "키는 0x13입니다."
+  tags: ["xor", "single-byte", "beginner"]
+  is_active: true
+
+- title: "Baby RSA"
+  category: crypto
+  difficulty: 2
+  points: 100
+  max_points: 500
+  min_points: 50
+  decay: 8.0
+  description: |
+    아주 작은 RSA 키로 암호화된 메시지를 복호화하세요.
+
+    ```
+    n = 323
+    e = 65537
+    c = 245
+    ```
+
+    `n`이 충분히 작아서 소인수분해가 가능합니다.
+    `p`와 `q`를 구하고, `d`를 계산하여 복호화하세요.
+
+    플래그 형식: 복호화한 평문 `m`을 `BNDT{m}` 형식으로 제출하세요.
+    예시: 평문이 42이면 `BNDT{42}`
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: false
+  files:
+    - "rsa_challenge.py"
+  hints:
+    - cost: 30
+      content: "n = 323 = 17 × 19 입니다."
+    - cost: 70
+      content: "phi = (17-1) × (19-1) = 288, d = pow(65537, -1, 288)"
+  tags: ["rsa", "factorization", "small-key"]
+  is_active: true
+
+# === Web ===
+
+- title: "Baby SQLi"
+  category: web
+  difficulty: 1
+  points: 100
+  max_points: 300
+  min_points: 50
+  decay: 10.0
+  description: |
+    이 로그인 페이지에는 SQL Injection 취약점이 있습니다.
+
+    `http://wargamebandit.is-a.dev:{port}` 로 접속하세요.
+
+    관리자 계정으로 로그인하면 플래그를 획득할 수 있습니다.
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: true
+  docker:
+    image: "challenges/web/baby_sqli"
+    port: 5000
+  hints:
+    - cost: 30
+      content: "' OR 1=1 -- 를 시도해보세요."
+    - cost: 70
+      content: "username에 admin' -- 를 입력하세요."
+  tags: ["sqli", "login-bypass", "beginner"]
+  is_active: true
+
+- title: "Cookie Monster"
+  category: web
+  difficulty: 2
+  points: 100
+  max_points: 400
+  min_points: 50
+  decay: 8.0
+  description: |
+    쿠키를 조작하여 관리자 권한을 획득하세요!
+
+    `http://wargamebandit.is-a.dev:{port}` 로 접속하세요.
+
+    일반 유저로 로그인한 뒤, 관리자 페이지(`/admin`)에 접근하면 플래그를 얻을 수 있습니다.
+
+    **계정 정보:**
+    - ID: `guest`
+    - PW: `guest123`
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: true
+  docker:
+    image: "challenges/web/cookie_monster"
+    port: 5000
+  hints:
+    - cost: 30
+      content: "로그인 후 쿠키를 확인해보세요. role 값이 있지 않나요?"
+    - cost: 70
+      content: "쿠키의 role 값을 'admin'으로 변경하고 /admin에 접속하세요."
+  tags: ["cookie", "authentication", "manipulation"]
+  is_active: true
+
+# === Forensics ===
+
+- title: "Hidden in Plain Sight"
+  category: forensics
+  difficulty: 1
+  points: 100
+  max_points: 300
+  min_points: 50
+  decay: 10.0
+  description: |
+    이 텍스트 파일에 숨겨진 메시지를 찾으세요.
+
+    겉보기에는 평범한 텍스트 파일이지만, 눈에 보이지 않는 무언가가 숨어있습니다.
+
+    `message.txt`를 다운로드하여 분석해보세요.
+
+    > Tip: 항상 눈에 보이는 것만이 전부는 아닙니다.
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: false
+  files:
+    - "message.txt"
+  hints:
+    - cost: 30
+      content: "hexdump나 xxd 명령어로 파일의 실제 바이트를 확인해보세요."
+    - cost: 70
+      content: "파일 끝에 NULL 바이트 이후에 숨겨진 데이터가 있습니다."
+  tags: ["hex", "hidden-data", "beginner"]
+  is_active: true
+
+# === Misc ===
+
+- title: "Base Madness"
+  category: misc
+  difficulty: 1
+  points: 100
+  max_points: 200
+  min_points: 50
+  decay: 12.0
+  description: |
+    누군가가 플래그를 여러 겹의 인코딩으로 감추었습니다.
+
+    `encoded.txt` 파일을 다운로드하고, 하나씩 디코딩하여 원래 플래그를 찾으세요.
+
+    사용된 인코딩은 모두 기본적인 것들입니다:
+    - Base64
+    - Hex
+    - 또 다른 Base64...
+
+    양파 껍질을 벗기듯이, 레이어를 하나씩 벗겨보세요.
+  flag: "REDACTED"  # see flag.txt
+  flag_type: static
+  is_dynamic: false
+  files:
+    - "encoded.txt"
+    - "encode.py"
+  hints:
+    - cost: 20
+      content: "첫 번째 레이어는 Base64입니다."
+    - cost: 50
+      content: "Base64 → Hex → Base64 → 원문 순서입니다. 역순으로 디코딩하세요."
+  tags: ["encoding", "base64", "hex", "beginner"]
+  is_active: true

@@ -1,0 +1,32 @@
+title: "Format String Fun"
+category: pwn
+difficulty: 2
+points: 100
+max_points: 400
+min_points: 50
+decay: 8.0
+description: |
+  포맷 스트링 취약점을 이용하여 플래그를 읽어보세요.
+
+  `nc wargamebandit.is-a.dev {port}` 로 접속하세요.
+
+  **Hint:** `printf`에 사용자 입력을 직접 넣으면 어떤 일이 일어날까요?
+flag: "REDACTED"  # see flag.txt
+flag_type: static
+is_dynamic: true
+docker:
+  image: "challenges/pwn/format_string"
+  build_context: "./src"
+  port: 9001
+  timeout: 1800
+  memory_limit: "128m"
+  cpu_limit: 0.5
+files:
+  - "format_string"
+hints:
+  - cost: 30
+    content: "스택에 있는 값을 출력해보세요. %x나 %p를 사용할 수 있습니다."
+  - cost: 70
+    content: "플래그는 스택 어딘가에 로드되어 있습니다. %s를 적절한 위치에 사용하세요."
+tags: ["format-string", "stack", "leak"]
+author: "admin"

@@ -1,0 +1,49 @@
+# Environment
+.env
+*.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Node
+node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Certbot (production certs)
+certbot/conf/
+certbot/www/
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Zone Identifier (WSL)
+*:Zone.Identifier
+
+# Challenge flags & generated challenge files (contain encoded flags)
+**/challenges/**/flag.txt
+backend/challenges/forensics/hidden_message/files/message.txt
+backend/challenges/crypto/xor_cipher/files/encrypted.bin
+backend/challenges/misc/base_madness/files/encoded.txt

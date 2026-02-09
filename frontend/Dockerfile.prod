@@ -1,0 +1,18 @@
+# Stage 1: Build
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci --ignore-scripts
+
+COPY . .
+RUN npm run build
+
+# Stage 2: Output
+FROM alpine:3.19
+
+# 빌드 결과물만 복사
+COPY --from=builder /app/dist /app/dist
+
+VOLUME /output

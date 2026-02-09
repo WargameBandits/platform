@@ -1,0 +1,29 @@
+title: "Baby Reversing"
+category: reversing
+difficulty: 1
+points: 100
+max_points: 300
+min_points: 50
+decay: 10.0
+description: |
+  간단한 패스워드 체크 프로그램입니다.
+  올바른 패스워드를 찾아 플래그를 획득하세요.
+
+  바이너리를 다운로드하여 분석해보세요.
+
+  ```
+  $ ./baby_rev
+  Enter password: ???
+  ```
+flag: "REDACTED"  # see flag.txt
+flag_type: static
+is_dynamic: false
+files:
+  - "baby_rev"
+hints:
+  - cost: 30
+    content: "strings 명령어로 바이너리 안의 문자열을 확인해보세요."
+  - cost: 70
+    content: "XOR 연산으로 각 글자를 비교하고 있습니다. 키는 0x42입니다."
+tags: ["xor", "strings", "beginner"]
+author: "admin"

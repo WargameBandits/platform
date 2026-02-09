@@ -1,0 +1,27 @@
+title: "Baby SQL Injection"
+category: web
+difficulty: 1
+points: 100
+description: |
+  간단한 로그인 페이지가 있습니다.
+  관리자 계정으로 로그인하면 플래그를 얻을 수 있습니다.
+
+  http://wargamebandit.is-a.dev:{port} 으로 접속하세요.
+flag: "REDACTED"  # see flag.txt
+flag_type: static
+is_dynamic: true
+docker:
+  image: "challenges/web/baby_sqli"
+  build_context: "./src"
+  port: 5000
+  timeout: 1800
+  memory_limit: "128m"
+  cpu_limit: 0.5
+files: []
+hints:
+  - cost: 50
+    content: "SQL 쿼리에 사용자 입력이 직접 들어가고 있지 않나요?"
+  - cost: 100
+    content: "' OR '1'='1 을 시도해보세요."
+tags: ["sqli", "web", "beginner", "login-bypass"]
+author: "admin"

@@ -1,0 +1,33 @@
+title: "Baby RSA"
+category: crypto
+difficulty: 2
+points: 100
+max_points: 500
+min_points: 50
+decay: 8.0
+description: |
+  아주 작은 RSA 키로 암호화된 메시지를 복호화하세요.
+
+  ```
+  n = 323
+  e = 65537
+  c = 245
+  ```
+
+  `n`이 충분히 작아서 소인수분해가 가능합니다.
+  `p`와 `q`를 구하고, `d`를 계산하여 복호화하세요.
+
+  플래그 형식: 복호화한 평문 `m`을 `BNDT{m}` 형식으로 제출하세요.
+  예시: 평문이 42이면 `BNDT{42}`
+flag: "REDACTED"  # see flag.txt
+flag_type: static
+is_dynamic: false
+files:
+  - "rsa_challenge.py"
+hints:
+  - cost: 30
+    content: "n = 323 = 17 × 19 입니다."
+  - cost: 70
+    content: "phi = (17-1) × (19-1) = 288, d = pow(65537, -1, 288)"
+tags: ["rsa", "factorization", "small-key"]
+author: "admin"

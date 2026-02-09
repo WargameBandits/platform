@@ -1,0 +1,27 @@
+title: "Hidden in Plain Sight"
+category: forensics
+difficulty: 1
+points: 100
+max_points: 300
+min_points: 50
+decay: 10.0
+description: |
+  이 텍스트 파일에 숨겨진 메시지를 찾으세요.
+
+  겉보기에는 평범한 텍스트 파일이지만, 눈에 보이지 않는 무언가가 숨어있습니다.
+
+  `message.txt`를 다운로드하여 분석해보세요.
+
+  > Tip: 항상 눈에 보이는 것만이 전부는 아닙니다.
+flag: "REDACTED"  # see flag.txt
+flag_type: static
+is_dynamic: false
+files:
+  - "message.txt"
+hints:
+  - cost: 30
+    content: "hexdump나 xxd 명령어로 파일의 실제 바이트를 확인해보세요."
+  - cost: 70
+    content: "파일 끝에 NULL 바이트 이후에 숨겨진 데이터가 있습니다."
+tags: ["hex", "hidden-data", "beginner"]
+author: "admin"

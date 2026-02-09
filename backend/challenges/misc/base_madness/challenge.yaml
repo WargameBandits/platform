@@ -1,0 +1,31 @@
+title: "Base Madness"
+category: misc
+difficulty: 1
+points: 100
+max_points: 200
+min_points: 50
+decay: 12.0
+description: |
+  누군가가 플래그를 여러 겹의 인코딩으로 감추었습니다.
+
+  `encoded.txt` 파일을 다운로드하고, 하나씩 디코딩하여 원래 플래그를 찾으세요.
+
+  사용된 인코딩은 모두 기본적인 것들입니다:
+  - Base64
+  - Hex
+  - 또 다른 Base64...
+
+  > 양파 껍질을 벗기듯이, 레이어를 하나씩 벗겨보세요. 🧅
+flag: "REDACTED"  # see flag.txt
+flag_type: static
+is_dynamic: false
+files:
+  - "encoded.txt"
+  - "encode.py"
+hints:
+  - cost: 20
+    content: "첫 번째 레이어는 Base64입니다."
+  - cost: 50
+    content: "Base64 → Hex → Base64 → 원문 순서입니다. 역순으로 디코딩하세요."
+tags: ["encoding", "base64", "hex", "beginner"]
+author: "admin"

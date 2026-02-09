@@ -1,0 +1,29 @@
+title: "Basic Buffer Overflow"
+category: pwn
+difficulty: 1
+points: 100
+description: |
+  간단한 스택 버퍼 오버플로우 문제입니다.
+  `nc wargamebandit.is-a.dev {port}` 로 접속하세요.
+
+  gets() 함수로 입력을 받고 있어 스택 버퍼 오버플로우가 발생합니다.
+  win() 함수를 호출하면 플래그를 얻을 수 있습니다.
+flag: "REDACTED"  # see flag.txt
+flag_type: static
+is_dynamic: true
+docker:
+  image: "challenges/pwn/basic_bof"
+  build_context: "./src"
+  port: 9001
+  timeout: 1800
+  memory_limit: "128m"
+  cpu_limit: 0.5
+files:
+  - "basic_bof"
+hints:
+  - cost: 50
+    content: "gets() 함수의 취약점을 생각해보세요."
+  - cost: 100
+    content: "return address를 win() 함수로 덮어쓰세요."
+tags: ["stack", "bof", "beginner"]
+author: "admin"
