@@ -8,7 +8,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
 from app.config import get_settings
 from app.database import Base
@@ -24,9 +24,9 @@ if config.config_file_name is not None:
 # 모델 메타데이터 (마이그레이션 자동 생성용)
 target_metadata = Base.metadata
 
-# 환경변수에서 DB URL 가져오기
+# 환경변수에서 DB URL 가져오기 (asyncpg 호환 형식으로 변환)
 settings = get_settings()
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.async_database_url)
 
 
 def run_migrations_offline() -> None:
@@ -56,10 +56,17 @@ def do_run_migrations(connection) -> None:
 
 async def run_async_migrations() -> None:
     """비동기 엔진으로 마이그레이션을 실행한다."""
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
+    import ssl as _ssl
+
+    # Neon PostgreSQL 등 외부 관리형 DB는 SSL 필수
+    connect_args: dict = {}
+    if "neon.tech" in settings.async_database_url or settings.is_production:
+        connect_args["ssl"] = _ssl.create_default_context()
+
+    connectable = create_async_engine(
+        settings.async_database_url,
         poolclass=pool.NullPool,
+        connect_args=connect_args,
     )
 
     async with connectable.connect() as connection:

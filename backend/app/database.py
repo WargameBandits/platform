@@ -3,6 +3,7 @@
 async SQLAlchemy 엔진과 세션 팩토리를 제공한다.
 """
 
+import ssl as _ssl
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
@@ -16,12 +17,22 @@ from app.config import get_settings
 
 settings = get_settings()
 
+# Neon PostgreSQL 등 외부 관리형 DB는 SSL 필수
+_connect_args: dict = {}
+_is_managed_db = "neon.tech" in settings.async_database_url or settings.is_production
+if _is_managed_db:
+    _connect_args["ssl"] = _ssl.create_default_context()
+
+# Neon Pooler(PgBouncer) 사용 시 prepared statement 비활성화
+_connect_args.setdefault("statement_cache_size", 0) if "pooler" in settings.async_database_url else None
+
 engine = create_async_engine(
     settings.async_database_url,
     echo=not settings.is_production,
     pool_pre_ping=True,
-    pool_size=5 if settings.is_production else 10,
-    max_overflow=10 if settings.is_production else 20,
+    pool_size=3 if _is_managed_db else 10,
+    max_overflow=5 if _is_managed_db else 20,
+    connect_args=_connect_args,
 )
 
 async_session_factory = async_sessionmaker(

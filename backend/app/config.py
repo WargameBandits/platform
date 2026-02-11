@@ -5,6 +5,7 @@ pydantic-settings 기반으로 .env 파일에서 설정값을 로드한다.
 
 import json
 from functools import lru_cache
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -60,14 +61,23 @@ class Settings(BaseSettings):
     def async_database_url(self) -> str:
         """asyncpg용 DATABASE_URL을 반환한다.
 
-        Render는 postgres:// 형식을 제공하지만 asyncpg는
+        Neon/Render는 postgres:// 형식을 제공하지만 asyncpg는
         postgresql+asyncpg:// 형식이 필요하다.
+        asyncpg가 지원하지 않는 쿼리 파라미터(sslmode, channel_binding 등)도 제거한다.
         """
         url = self.DATABASE_URL
         if url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql+asyncpg://", 1)
         elif url.startswith("postgresql://"):
             url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+        # asyncpg 미지원 파라미터 제거 (SSL은 connect_args로 처리)
+        _unsupported = {"sslmode", "channel_binding"}
+        parsed = urlparse(url)
+        if parsed.query:
+            params = parse_qs(parsed.query)
+            filtered = {k: v for k, v in params.items() if k not in _unsupported}
+            url = urlunparse(parsed._replace(query=urlencode(filtered, doseq=True)))
         return url
 
     @property
