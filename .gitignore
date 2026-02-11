@@ -46,8 +46,8 @@ certbot/www/
 # Zone Identifier (WSL)
 *:Zone.Identifier
 
-# Challenge flags & generated challenge files (contain encoded flags)
-**/challenges/**/flag.txt
+# Generated challenge files (contain encoded flags)
+# Note: flag.txt files are committed (seed script needs them at deploy time)
 backend/challenges/forensics/hidden_message/files/message.txt
 backend/challenges/crypto/xor_cipher/files/encrypted.bin
 backend/challenges/misc/base_madness/files/encoded.txt
