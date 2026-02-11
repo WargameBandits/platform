@@ -6,18 +6,19 @@
 import asyncio
 import logging
 
-from sqlalchemy import select, func
-
 from app.celery_app import celery_app
-from app.database import async_session_factory
-from app.models.challenge import Challenge
-from app.models.submission import Submission
-from app.models.user import User
 
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(name="app.tasks.scoring_tasks.recalculate_dynamic_scores")
+def _task_decorator(name: str):
+    """celery_app이 None이면 no-op 데코레이터를 반환한다."""
+    if celery_app is not None:
+        return celery_app.task(name=name)
+    return lambda f: f
+
+
+@_task_decorator("app.tasks.scoring_tasks.recalculate_dynamic_scores")
 def recalculate_dynamic_scores() -> dict:
     """모든 챌린지의 동적 점수를 재계산하는 주기적 태스크.
 
@@ -32,6 +33,11 @@ def recalculate_dynamic_scores() -> dict:
 
 async def _recalculate_challenges() -> int:
     """동적 점수 재계산 비동기 래퍼."""
+    from sqlalchemy import select
+
+    from app.database import async_session_factory
+    from app.models.challenge import Challenge
+
     async with async_session_factory() as db:
         try:
             result = await db.execute(
@@ -58,7 +64,7 @@ async def _recalculate_challenges() -> int:
             return 0
 
 
-@celery_app.task(name="app.tasks.scoring_tasks.recalculate_all_user_scores")
+@_task_decorator("app.tasks.scoring_tasks.recalculate_all_user_scores")
 def recalculate_all_user_scores() -> dict:
     """모든 유저의 총 점수를 Submission 기반으로 재계산한다.
 
@@ -73,6 +79,13 @@ def recalculate_all_user_scores() -> dict:
 
 async def _recalculate_users() -> int:
     """유저 점수 재계산 비동기 래퍼."""
+    from sqlalchemy import select, func
+
+    from app.database import async_session_factory
+    from app.models.challenge import Challenge
+    from app.models.submission import Submission
+    from app.models.user import User
+
     async with async_session_factory() as db:
         try:
             # 유저별 맞은 제출의 점수 합산

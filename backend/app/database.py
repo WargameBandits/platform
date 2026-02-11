@@ -17,11 +17,11 @@ from app.config import get_settings
 settings = get_settings()
 
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.async_database_url,
     echo=not settings.is_production,
     pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    pool_size=5 if settings.is_production else 10,
+    max_overflow=10 if settings.is_production else 20,
 )
 
 async_session_factory = async_sessionmaker(

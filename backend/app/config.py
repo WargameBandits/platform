@@ -33,8 +33,12 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "wargame"
     DATABASE_URL: str = "postgresql+asyncpg://wargame:change-me@db:5432/wargame"
 
-    # Redis
-    REDIS_URL: str = "redis://redis:6379/0"
+    # Redis (None이면 Celery 비활성화 — Render 배포 시)
+    REDIS_URL: str | None = None
+
+    # Feature Flags (Oracle Cloud에서 True로 설정)
+    CELERY_ENABLED: bool = False
+    DOCKER_ENABLED: bool = False
 
     # Docker Instance
     CONTAINER_PORT_RANGE_START: int = 30000
@@ -51,6 +55,20 @@ class Settings(BaseSettings):
     def cors_origins_list(self) -> list[str]:
         """CORS 허용 오리진 목록을 리스트로 반환한다."""
         return json.loads(self.CORS_ORIGINS)
+
+    @property
+    def async_database_url(self) -> str:
+        """asyncpg용 DATABASE_URL을 반환한다.
+
+        Render는 postgres:// 형식을 제공하지만 asyncpg는
+        postgresql+asyncpg:// 형식이 필요하다.
+        """
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
 
     @property
     def is_production(self) -> bool:

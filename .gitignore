@@ -39,6 +39,10 @@ certbot/www/
 # Logs
 *.log
 
+# SSH keys & secrets
+*.key
+*.pem
+
 # Zone Identifier (WSL)
 *:Zone.Identifier
 

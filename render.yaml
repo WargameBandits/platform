@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: wargame-bandits-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: wargame-db
+          property: connectionURI
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENVIRONMENT
+        value: production
+      - key: CELERY_ENABLED
+        value: "false"
+      - key: DOCKER_ENABLED
+        value: "false"
+      - key: CORS_ORIGINS
+        value: '["https://wargame-bandits.vercel.app","https://wargamebandit.is-a.dev"]'
+
+databases:
+  - name: wargame-db
+    plan: free

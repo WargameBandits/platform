@@ -4,13 +4,18 @@ import asyncio
 import logging
 
 from app.celery_app import celery_app
-from app.database import async_session_factory
-from app.services import container_service
 
 logger = logging.getLogger(__name__)
 
 
-@celery_app.task(name="app.tasks.container_tasks.cleanup_expired_containers")
+def _task_decorator(name: str):
+    """celery_app이 None이면 no-op 데코레이터를 반환한다."""
+    if celery_app is not None:
+        return celery_app.task(name=name)
+    return lambda f: f
+
+
+@_task_decorator("app.tasks.container_tasks.cleanup_expired_containers")
 def cleanup_expired_containers() -> dict:
     """만료된 Docker 인스턴스를 정리하는 주기적 태스크.
 
@@ -25,6 +30,9 @@ def cleanup_expired_containers() -> dict:
 
 async def _cleanup() -> int:
     """만료 인스턴스 정리 비동기 래퍼."""
+    from app.database import async_session_factory
+    from app.services import container_service
+
     async with async_session_factory() as db:
         try:
             count = await container_service.cleanup_expired(db)
