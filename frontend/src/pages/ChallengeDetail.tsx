@@ -8,7 +8,11 @@ import DifficultyBadge from "../components/challenge/DifficultyBadge";
 import FlagSubmitForm from "../components/challenge/FlagSubmitForm";
 import WebTerminal from "../components/terminal/WebTerminal";
 import MarkdownRenderer from "../components/common/MarkdownRenderer";
-import { getCategoryColor } from "../utils/categoryColors";
+import BrutalCard from "../components/ui/BrutalCard";
+import BrutalButton from "../components/ui/BrutalButton";
+import BrutalBadge from "../components/ui/BrutalBadge";
+import PixelLoader from "../components/common/PixelLoader";
+import { errorToast } from "../components/common/Toast";
 
 function ChallengeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -38,7 +42,7 @@ function ChallengeDetail() {
       setInstance(inst);
     } catch (e: any) {
       const msg = e.response?.data?.detail ?? "인스턴스 생성에 실패했습니다.";
-      alert(msg);
+      errorToast("INSTANCE ERROR", msg);
     } finally {
       setInstanceLoading(false);
     }
@@ -52,7 +56,7 @@ function ChallengeDetail() {
       setInstance(null);
       setShowTerminal(false);
     } catch {
-      alert("인스턴스 중지에 실패했습니다.");
+      errorToast("INSTANCE ERROR", "인스턴스 중지에 실패했습니다.");
     } finally {
       setInstanceLoading(false);
     }
@@ -60,8 +64,8 @@ function ChallengeDetail() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-20 text-center text-muted-foreground">
-        Loading...
+      <div className="mx-auto max-w-4xl px-4 py-20">
+        <PixelLoader text="LOADING CHALLENGE" />
       </div>
     );
   }
@@ -69,12 +73,12 @@ function ChallengeDetail() {
   if (error || !challenge) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-20 text-center">
-        <p className="text-destructive">{error ?? "Not found"}</p>
+        <p className="font-retro text-lg text-destructive">{error ?? "Not found"}</p>
         <Link
           to="/challenges"
-          className="mt-4 inline-block text-sm text-primary hover:underline"
+          className="mt-4 inline-block font-retro text-sm text-neon hover:underline"
         >
-          Back to Challenges
+          &lt; BACK TO CHALLENGES
         </Link>
       </div>
     );
@@ -86,85 +90,91 @@ function ChallengeDetail() {
     <div className="mx-auto max-w-4xl px-4 py-10">
       <Link
         to="/challenges"
-        className="text-sm text-muted-foreground hover:text-foreground"
+        className="font-retro text-sm text-muted-foreground transition-colors hover:text-neon"
       >
-        &larr; Back to Challenges
+        &lt; BACK TO CHALLENGES
       </Link>
 
       <div className="mt-4">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold">{challenge.title}</h1>
-            <div className="mt-2 flex items-center gap-3">
-              <span
-                className={`rounded border px-2 py-0.5 text-xs font-medium uppercase ${getCategoryColor(challenge.category).bg} ${getCategoryColor(challenge.category).text} ${getCategoryColor(challenge.category).border}`}
-              >
+            <h1 className="font-pixel text-lg text-foreground sm:text-xl">
+              [{challenge.title.toUpperCase()}]
+            </h1>
+            <div className="mt-3 flex items-center gap-3">
+              <BrutalBadge variant="purple">
                 {challenge.category}
-              </span>
+              </BrutalBadge>
               <DifficultyBadge difficulty={challenge.difficulty} />
-              <span className="text-sm text-muted-foreground">
+              <span className="font-retro text-sm text-muted-foreground">
                 {challenge.solve_count} solves
               </span>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-2xl font-bold text-primary">
+            <div className="font-pixel text-xl text-neon">
               {challenge.points}
-              <span className="text-sm font-normal text-muted-foreground">
+              <span className="font-retro text-sm text-muted-foreground">
                 {" "}
-                pts
+                PTS
               </span>
             </div>
           </div>
         </div>
 
         {/* 설명 */}
-        <div className="mt-6 rounded-lg border border-border bg-card p-6">
+        <BrutalCard className="mt-6 p-6">
           <MarkdownRenderer content={challenge.description} />
-        </div>
+        </BrutalCard>
 
         {/* 동적 인스턴스 관리 */}
         {challenge.is_dynamic && (
-          <div className="mt-4 rounded-lg border border-border bg-card p-4">
-            <h3 className="text-sm font-medium">Dynamic Instance</h3>
+          <BrutalCard className="mt-4 p-4">
+            <h3 className="font-retro text-sm uppercase text-muted-foreground">
+              Dynamic Instance
+            </h3>
 
             {instance ? (
               <div className="mt-3 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    {instance.connection_info.startsWith("http") ? (
-                      <a
-                        href={instance.connection_info}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded bg-muted px-2 py-1 font-mono text-sm text-primary hover:underline"
-                      >
-                        {instance.connection_info}
-                      </a>
-                    ) : (
-                      <code className="rounded bg-muted px-2 py-1 font-mono text-sm text-primary">
-                        {instance.connection_info}
-                      </code>
-                    )}
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <div className="border-2 border-neon bg-neon/10 px-3 py-2">
+                      {instance.connection_info.startsWith("http") ? (
+                        <a
+                          href={instance.connection_info}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-sm text-neon hover:underline"
+                        >
+                          {instance.connection_info}
+                        </a>
+                      ) : (
+                        <code className="font-mono text-sm text-neon">
+                          {instance.connection_info}
+                        </code>
+                      )}
+                    </div>
+                    <p className="mt-1 font-retro text-xs text-muted-foreground">
                       Expires:{" "}
                       {new Date(instance.expires_at).toLocaleTimeString()}
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <button
+                    <BrutalButton
+                      variant="secondary"
+                      size="sm"
                       onClick={() => setShowTerminal(!showTerminal)}
-                      className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
                     >
                       {showTerminal ? "Hide Terminal" : "Web Terminal"}
-                    </button>
-                    <button
+                    </BrutalButton>
+                    <BrutalButton
+                      variant="destructive"
+                      size="sm"
                       onClick={handleStopInstance}
                       disabled={instanceLoading}
-                      className="rounded-md bg-destructive px-3 py-1.5 text-sm text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
                     >
                       Stop
-                    </button>
+                    </BrutalButton>
                   </div>
                 </div>
 
@@ -173,45 +183,49 @@ function ChallengeDetail() {
                 )}
               </div>
             ) : (
-              <button
+              <BrutalButton
+                variant="primary"
+                className="mt-3"
                 onClick={handleStartInstance}
                 disabled={instanceLoading}
-                className="mt-3 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
                 {instanceLoading ? "Starting..." : "Start Instance"}
-              </button>
+              </BrutalButton>
             )}
-          </div>
+          </BrutalCard>
         )}
 
         {/* 파일 다운로드 */}
         {challenge.files && challenge.files.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Files</h3>
+          <BrutalCard className="mt-4 p-4">
+            <h3 className="font-retro text-sm uppercase text-muted-foreground">
+              Files
+            </h3>
             <div className="mt-2 flex flex-wrap gap-2">
               {challenge.files.map((file) => (
                 <a
                   key={file}
                   href={`/files/${challenge.id}/${file}`}
                   download
-                  className="inline-flex items-center rounded-md border border-border px-3 py-1.5 text-sm hover:bg-accent"
                 >
-                  {file}
+                  <BrutalButton variant="ghost" size="sm" className="border-2 border-border">
+                    {file}
+                  </BrutalButton>
                 </a>
               ))}
             </div>
-          </div>
+          </BrutalCard>
         )}
 
         {/* 태그 */}
         {challenge.tags && challenge.tags.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-1">
+          <div className="mt-4 flex flex-wrap gap-2">
             {challenge.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                className="font-retro text-sm text-muted-foreground"
               >
-                {tag}
+                #{tag}
               </span>
             ))}
           </div>
@@ -219,25 +233,27 @@ function ChallengeDetail() {
 
         {/* 힌트 */}
         {challenge.hints && challenge.hints.length > 0 && (
-          <div className="mt-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Hints</h3>
+          <BrutalCard className="mt-4 p-4">
+            <h3 className="font-retro text-sm uppercase text-muted-foreground">
+              Hints
+            </h3>
             <div className="mt-2 space-y-2">
               {challenge.hints.map((hint, idx) => (
                 <details
                   key={idx}
-                  className="rounded-md border border-border p-3"
+                  className="border-2 border-border p-3"
                 >
-                  <summary className="cursor-pointer text-sm">
+                  <summary className="cursor-pointer font-retro text-sm">
                     Hint {idx + 1}{" "}
                     <span className="text-muted-foreground">
                       (-{hint.cost} pts)
                     </span>
                   </summary>
-                  <p className="mt-2 text-sm">{hint.content}</p>
+                  <p className="mt-2 font-retro text-sm">{hint.content}</p>
                 </details>
               ))}
             </div>
-          </div>
+          </BrutalCard>
         )}
 
         {/* 플래그 제출 */}

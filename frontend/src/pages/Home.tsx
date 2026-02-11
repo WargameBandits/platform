@@ -1,33 +1,33 @@
 import { Link } from "react-router-dom";
+import BrutalCard from "../components/ui/BrutalCard";
+import BrutalButton from "../components/ui/BrutalButton";
 
 function Home() {
   return (
     <div className="py-10">
       <div className="text-center">
-        <h1 className="animate-glitch font-pixel text-3xl leading-relaxed text-primary">
+        <h1 className="animate-glitch font-pixel text-3xl leading-relaxed text-foreground">
           WARGAME
           <br />
-          BANDITS
+          <span className="text-neon">BANDITS</span>
         </h1>
-        <p className="mt-6 text-lg text-muted-foreground">
+        <p className="mt-6 font-retro text-2xl text-muted-foreground">
           Pwn / Reversing / Crypto / Web / Forensics / Misc
         </p>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 font-retro text-xl text-muted-foreground">
           CTF Wargame Platform
-          <span className="animate-blink ml-1 text-primary">_</span>
+          <span className="animate-blink ml-1 text-neon">_</span>
         </p>
         <div className="mt-8 flex justify-center gap-4">
-          <Link
-            to="/challenges"
-            className="rounded-md bg-primary px-6 py-3 font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            Start Hacking
+          <Link to="/challenges">
+            <BrutalButton variant="neon" size="lg">
+              Start Hacking
+            </BrutalButton>
           </Link>
-          <Link
-            to="/scoreboard"
-            className="rounded-md border border-border px-6 py-3 font-medium hover:bg-accent/10"
-          >
-            Scoreboard
+          <Link to="/scoreboard">
+            <BrutalButton variant="secondary" size="lg">
+              Scoreboard
+            </BrutalButton>
           </Link>
         </div>
       </div>
@@ -36,28 +36,31 @@ function Home() {
         {[
           {
             title: "Multi-Category",
-            desc: "Pwn, Reversing, Crypto, Web, Forensics, Misc — 전 카테고리 지원",
-            icon: "🎯",
+            desc: "Pwn, Reversing, Crypto, Web, Forensics, Misc — All categories supported",
+            marker: "[01]",
           },
           {
             title: "Dynamic Instances",
-            desc: "유저별 격리된 Docker 컨테이너로 Pwn/Web 문제 풀이",
-            icon: "🐳",
+            desc: "Isolated Docker containers per user for Pwn/Web challenges",
+            marker: "[02]",
           },
           {
             title: "Community",
-            desc: "Write-up 공유, 유저 출제, 카테고리별 랭킹",
-            icon: "👥",
+            desc: "Share write-ups, submit challenges, compete on category rankings",
+            marker: "[03]",
           },
         ].map((feature) => (
-          <div
-            key={feature.title}
-            className="rounded-lg border border-border bg-card p-6 transition-colors hover:border-primary/30"
-          >
-            <span className="text-2xl">{feature.icon}</span>
-            <h3 className="mt-3 text-lg font-semibold">{feature.title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{feature.desc}</p>
-          </div>
+          <BrutalCard key={feature.title} hover className="p-6">
+            <span className="font-pixel text-xs text-neon">
+              {feature.marker}
+            </span>
+            <h3 className="mt-3 font-retro text-2xl text-foreground">
+              {feature.title}
+            </h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {feature.desc}
+            </p>
+          </BrutalCard>
         ))}
       </div>
     </div>

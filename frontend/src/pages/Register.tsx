@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/authStore";
+import BrutalCard from "../components/ui/BrutalCard";
+import BrutalInput from "../components/ui/BrutalInput";
+import BrutalButton from "../components/ui/BrutalButton";
 
 function Register() {
   const [username, setUsername] = useState("");
@@ -17,7 +20,7 @@ function Register() {
     setError(null);
 
     if (password !== confirmPassword) {
-      setError("비밀번호가 일치하지 않습니다.");
+      setError("Passwords do not match.");
       return;
     }
 
@@ -26,7 +29,7 @@ function Register() {
       await register(username, email, password);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.detail ?? "회원가입에 실패했습니다.");
+      setError(err.response?.data?.detail ?? "Registration failed.");
     } finally {
       setLoading(false);
     }
@@ -35,23 +38,28 @@ function Register() {
   return (
     <div className="w-full max-w-md px-4">
       <div className="text-center">
-        <h1 className="font-pixel text-lg text-primary">WB</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Wargame Bandits</p>
+        <h1 className="font-pixel text-2xl text-neon">BNDT</h1>
+        <p className="mt-2 font-retro text-xl text-muted-foreground">
+          WARGAME BANDITS
+        </p>
       </div>
 
-      <div className="mt-8 rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-bold">Register</h2>
+      <BrutalCard shadow="lg" className="mt-8 p-6">
+        <h2 className="font-pixel text-sm text-foreground">[REGISTER]</h2>
         {error && (
-          <p className="mt-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
+          <div className="mt-3 border-2 border-destructive bg-destructive/10 px-3 py-2">
+            <p className="font-retro text-base text-destructive">{error}</p>
+          </div>
         )}
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium">
+            <label
+              htmlFor="username"
+              className="block font-retro text-base text-foreground"
+            >
               Username
             </label>
-            <input
+            <BrutalInput
               id="username"
               type="text"
               required
@@ -60,67 +68,74 @@ function Register() {
               pattern="^[a-zA-Z0-9_-]+$"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1"
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">
+            <label
+              htmlFor="email"
+              className="block font-retro text-base text-foreground"
+            >
               Email
             </label>
-            <input
+            <BrutalInput
               id="email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium">
+            <label
+              htmlFor="password"
+              className="block font-retro text-base text-foreground"
+            >
               Password
             </label>
-            <input
+            <BrutalInput
               id="password"
               type="password"
               required
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1"
             />
           </div>
           <div>
             <label
               htmlFor="confirmPassword"
-              className="block text-sm font-medium"
+              className="block font-retro text-base text-foreground"
             >
               Confirm Password
             </label>
-            <input
+            <BrutalInput
               id="confirmPassword"
               type="password"
               required
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1"
             />
           </div>
-          <button
+          <BrutalButton
             type="submit"
+            variant="neon"
             disabled={loading}
-            className="w-full rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="w-full"
           >
-            {loading ? "Registering..." : "Register"}
-          </button>
+            {loading ? "REGISTERING..." : "REGISTER"}
+          </BrutalButton>
         </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-4 text-center font-retro text-base text-muted-foreground">
           Already have an account?{" "}
-          <Link to="/login" className="text-primary hover:underline">
+          <Link to="/login" className="text-neon underline underline-offset-2">
             Login
           </Link>
         </p>
-      </div>
+      </BrutalCard>
     </div>
   );
 }

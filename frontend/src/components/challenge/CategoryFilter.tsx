@@ -6,13 +6,13 @@ interface CategoryFilterProps {
 }
 
 const CATEGORIES: { value: Category | null; label: string }[] = [
-  { value: null, label: "All" },
-  { value: "pwn", label: "Pwn" },
-  { value: "reversing", label: "Reversing" },
-  { value: "crypto", label: "Crypto" },
-  { value: "web", label: "Web" },
-  { value: "forensics", label: "Forensics" },
-  { value: "misc", label: "Misc" },
+  { value: null, label: "ALL" },
+  { value: "pwn", label: "PWN" },
+  { value: "reversing", label: "REVERSING" },
+  { value: "crypto", label: "CRYPTO" },
+  { value: "web", label: "WEB" },
+  { value: "forensics", label: "FORENSICS" },
+  { value: "misc", label: "MISC" },
 ];
 
 function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
@@ -22,10 +22,10 @@ function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
         <button
           key={cat.label}
           onClick={() => onSelect(cat.value)}
-          className={`whitespace-nowrap rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
+          className={`whitespace-nowrap border-2 border-border px-4 py-2 font-retro text-sm uppercase transition-colors ${
             selected === cat.value
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border hover:bg-accent"
+              ? "bg-foreground text-background shadow-brutal-sm"
+              : "bg-background hover:bg-accent"
           }`}
         >
           {cat.label}

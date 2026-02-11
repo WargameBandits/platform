@@ -1,73 +1,104 @@
 import useAuthStore from "../stores/authStore";
+import BrutalCard from "../components/ui/BrutalCard";
+import BrutalBadge from "../components/ui/BrutalBadge";
+import MetricsCard from "../components/dashboard/MetricsCard";
 
 function Profile() {
   const user = useAuthStore((s) => s.user);
 
   if (!user) {
     return (
-      <div className="py-10 text-center text-muted-foreground">
-        Please login to view your profile.
+      <div className="border-2 border-border p-8 text-center">
+        <p className="font-retro text-xl text-muted-foreground">
+          Please login to view your profile.
+        </p>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Profile</h1>
+    <div className="space-y-6">
+      <h1 className="font-pixel text-lg text-foreground">[PROFILE]</h1>
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {/* User info card */}
-        <div className="rounded-lg border border-border bg-card p-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-2xl font-bold text-primary">
-              {user.username?.[0]?.toUpperCase() ?? "?"}
-            </div>
-            <div>
-              <h2 className="text-xl font-bold">{user.username}</h2>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-              <span className="mt-1 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                {user.role}
-              </span>
-            </div>
+      {/* User Info */}
+      <BrutalCard className="p-6">
+        <div className="flex items-center gap-6">
+          <div className="flex h-20 w-20 items-center justify-center border-2 border-neon bg-neon/20 font-pixel text-2xl text-neon">
+            {user.username?.[0]?.toUpperCase() ?? "?"}
+          </div>
+          <div>
+            <h2 className="font-pixel text-base text-foreground">
+              {user.username}
+            </h2>
+            <p className="mt-1 font-retro text-lg text-muted-foreground">
+              {user.email}
+            </p>
+            <BrutalBadge variant="purple" className="mt-2">
+              {user.role}
+            </BrutalBadge>
           </div>
         </div>
+      </BrutalCard>
 
-        {/* Stats card */}
-        <div className="rounded-lg border border-border bg-card p-6">
-          <h3 className="text-sm font-medium text-muted-foreground">Stats</h3>
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-2xl font-bold text-primary">
-                {user.total_score}
-              </p>
-              <p className="text-xs text-muted-foreground">Total Score</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{user.solved_count}</p>
-              <p className="text-xs text-muted-foreground">Problems Solved</p>
-            </div>
-          </div>
-        </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricsCard
+          label="Total Score"
+          value={`${user.total_score.toLocaleString()} PTS`}
+          accent="neon"
+        />
+        <MetricsCard
+          label="Solved"
+          value={user.solved_count}
+        />
+        <MetricsCard
+          label="Joined"
+          value={new Date(user.created_at).toLocaleDateString()}
+        />
+        <MetricsCard
+          label="Last Login"
+          value={
+            user.last_login
+              ? new Date(user.last_login).toLocaleDateString()
+              : "N/A"
+          }
+        />
       </div>
 
-      {/* Account info */}
-      <div className="mt-6 rounded-lg border border-border bg-card p-6">
-        <h3 className="text-sm font-medium text-muted-foreground">
-          Account Info
+      {/* Account Info */}
+      <BrutalCard className="p-6">
+        <h3 className="font-pixel text-[10px] text-foreground uppercase">
+          [Account Info]
         </h3>
         <div className="mt-4 space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Joined</span>
-            <span>{new Date(user.created_at).toLocaleDateString()}</span>
+          <div className="flex justify-between border-b border-border/30 pb-2">
+            <span className="font-retro text-base text-muted-foreground">
+              Joined
+            </span>
+            <span className="font-retro text-base text-foreground">
+              {new Date(user.created_at).toLocaleDateString()}
+            </span>
           </div>
           {user.last_login && (
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Last Login</span>
-              <span>{new Date(user.last_login).toLocaleString()}</span>
+            <div className="flex justify-between border-b border-border/30 pb-2">
+              <span className="font-retro text-base text-muted-foreground">
+                Last Login
+              </span>
+              <span className="font-retro text-base text-foreground">
+                {new Date(user.last_login).toLocaleString()}
+              </span>
             </div>
           )}
+          <div className="flex justify-between border-b border-border/30 pb-2">
+            <span className="font-retro text-base text-muted-foreground">
+              Role
+            </span>
+            <span className="font-retro text-base text-foreground uppercase">
+              {user.role}
+            </span>
+          </div>
         </div>
-      </div>
+      </BrutalCard>
     </div>
   );
 }

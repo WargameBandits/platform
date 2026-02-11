@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import useAuthStore from "../../stores/authStore";
+import PixelLoader from "./PixelLoader";
 
 function ProtectedRoute() {
   const user = useAuthStore((s) => s.user);
@@ -7,8 +8,8 @@ function ProtectedRoute() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-muted-foreground">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center">
+        <PixelLoader text="AUTHENTICATING" />
       </div>
     );
   }

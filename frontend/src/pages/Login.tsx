@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuthStore from "../stores/authStore";
+import BrutalCard from "../components/ui/BrutalCard";
+import BrutalInput from "../components/ui/BrutalInput";
+import BrutalButton from "../components/ui/BrutalButton";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -18,7 +21,7 @@ function Login() {
       await login(email, password);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.detail ?? "로그인에 실패했습니다.");
+      setError(err.response?.data?.detail ?? "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -27,59 +30,72 @@ function Login() {
   return (
     <div className="w-full max-w-md px-4">
       <div className="text-center">
-        <h1 className="font-pixel text-lg text-primary">WB</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Wargame Bandits</p>
+        <h1 className="font-pixel text-2xl text-neon">BNDT</h1>
+        <p className="mt-2 font-retro text-xl text-muted-foreground">
+          WARGAME BANDITS
+        </p>
       </div>
 
-      <div className="mt-8 rounded-lg border border-border bg-card p-6">
-        <h2 className="text-xl font-bold">Login</h2>
+      <BrutalCard shadow="lg" className="mt-8 p-6">
+        <h2 className="font-pixel text-sm text-foreground">[LOGIN]</h2>
         {error && (
-          <p className="mt-2 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
+          <div className="mt-3 border-2 border-destructive bg-destructive/10 px-3 py-2">
+            <p className="font-retro text-base text-destructive">{error}</p>
+          </div>
         )}
         <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">
+            <label
+              htmlFor="email"
+              className="block font-retro text-base text-foreground"
+            >
               Email
             </label>
-            <input
+            <BrutalInput
               id="email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1"
+              error={!!error}
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium">
+            <label
+              htmlFor="password"
+              className="block font-retro text-base text-foreground"
+            >
               Password
             </label>
-            <input
+            <BrutalInput
               id="password"
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="mt-1"
             />
           </div>
-          <button
+          <BrutalButton
             type="submit"
+            variant="neon"
             disabled={loading}
-            className="w-full rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            className="w-full"
           >
-            {loading ? "Logging in..." : "Login"}
-          </button>
+            {loading ? "LOGGING IN..." : "LOGIN"}
+          </BrutalButton>
         </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-4 text-center font-retro text-base text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link to="/register" className="text-primary hover:underline">
+          <Link
+            to="/register"
+            className="text-neon underline underline-offset-2"
+          >
             Register
           </Link>
         </p>
-      </div>
+      </BrutalCard>
     </div>
   );
 }

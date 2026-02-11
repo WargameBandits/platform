@@ -4,6 +4,10 @@ import {
   updateUserRole,
   type AdminUser,
 } from "../../services/admin";
+import BrutalInput from "../../components/ui/BrutalInput";
+import BrutalButton from "../../components/ui/BrutalButton";
+import PixelLoader from "../../components/common/PixelLoader";
+import { errorToast } from "../../components/common/Toast";
 
 function UserManagement() {
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -38,76 +42,93 @@ function UserManagement() {
         prev.map((u) => (u.id === userId ? { ...u, role } : u))
       );
     } catch {
-      alert("Failed to update role.");
+      errorToast("UPDATE FAILED", "Failed to update role.");
     }
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold">User Management</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <h1 className="font-pixel text-lg text-foreground">[USER_MANAGEMENT]</h1>
+      <p className="mt-1 font-retro text-sm text-muted-foreground">
         {total} users total
       </p>
 
       <form onSubmit={handleSearch} className="mt-4 flex gap-2">
-        <input
+        <BrutalInput
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search username..."
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          className="flex-1 text-sm"
         />
-        <button
-          type="submit"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
+        <BrutalButton type="submit" variant="primary">
           Search
-        </button>
+        </BrutalButton>
       </form>
 
       {loading ? (
-        <p className="mt-8 text-center text-muted-foreground">Loading...</p>
+        <PixelLoader text="LOADING USERS" className="mt-8" />
       ) : (
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full">
             <thead>
-              <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                <th className="px-3 py-2">ID</th>
-                <th className="px-3 py-2">Username</th>
-                <th className="px-3 py-2">Email</th>
-                <th className="px-3 py-2">Score</th>
-                <th className="px-3 py-2">Solved</th>
-                <th className="px-3 py-2">Role</th>
-                <th className="px-3 py-2">Joined</th>
+              <tr className="bg-foreground text-background">
+                <th className="border-b-2 border-border px-3 py-2 text-left font-retro text-xs uppercase">
+                  ID
+                </th>
+                <th className="border-b-2 border-border px-3 py-2 text-left font-retro text-xs uppercase">
+                  Username
+                </th>
+                <th className="border-b-2 border-border px-3 py-2 text-left font-retro text-xs uppercase">
+                  Email
+                </th>
+                <th className="border-b-2 border-border px-3 py-2 text-left font-retro text-xs uppercase">
+                  Score
+                </th>
+                <th className="border-b-2 border-border px-3 py-2 text-left font-retro text-xs uppercase">
+                  Solved
+                </th>
+                <th className="border-b-2 border-border px-3 py-2 text-left font-retro text-xs uppercase">
+                  Role
+                </th>
+                <th className="border-b-2 border-border px-3 py-2 text-left font-retro text-xs uppercase">
+                  Joined
+                </th>
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
+              {users.map((u, idx) => (
                 <tr
                   key={u.id}
-                  className="border-b border-border hover:bg-accent/5"
+                  className={idx % 2 === 1 ? "bg-muted/50" : ""}
                 >
-                  <td className="px-3 py-2 font-mono text-muted-foreground">
+                  <td className="border-b-2 border-border px-3 py-2 font-mono font-retro text-sm text-muted-foreground">
                     {u.id}
                   </td>
-                  <td className="px-3 py-2 font-medium">{u.username}</td>
-                  <td className="px-3 py-2 text-muted-foreground">
+                  <td className="border-b-2 border-border px-3 py-2 font-retro text-sm font-medium text-foreground">
+                    {u.username}
+                  </td>
+                  <td className="border-b-2 border-border px-3 py-2 font-retro text-sm text-muted-foreground">
                     {u.email}
                   </td>
-                  <td className="px-3 py-2 text-primary">{u.total_score}</td>
-                  <td className="px-3 py-2">{u.solved_count}</td>
-                  <td className="px-3 py-2">
+                  <td className="border-b-2 border-border px-3 py-2 font-retro text-sm text-neon">
+                    {u.total_score}
+                  </td>
+                  <td className="border-b-2 border-border px-3 py-2 font-retro text-sm">
+                    {u.solved_count}
+                  </td>
+                  <td className="border-b-2 border-border px-3 py-2">
                     <select
                       value={u.role}
                       onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                      className="rounded border border-input bg-background px-2 py-1 text-xs"
+                      className="border-2 border-border bg-background px-2 py-1 font-retro text-xs focus:border-neon focus:outline-none"
                     >
                       <option value="user">user</option>
                       <option value="challenge_author">author</option>
                       <option value="admin">admin</option>
                     </select>
                   </td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">
+                  <td className="border-b-2 border-border px-3 py-2 font-retro text-xs text-muted-foreground">
                     {u.created_at
                       ? new Date(u.created_at).toLocaleDateString()
                       : "-"}

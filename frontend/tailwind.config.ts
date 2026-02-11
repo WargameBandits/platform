@@ -8,7 +8,8 @@ const config: Config = {
     extend: {
       fontFamily: {
         pixel: ['"Press Start 2P"', "monospace"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        retro: ['"VT323"', "monospace"],
+        sans: ["Inter", "Pretendard", "system-ui", "sans-serif"],
         mono: ['"JetBrains Mono"', "monospace"],
       },
       colors: {
@@ -17,6 +18,8 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        neon: "#00FF41",
+        "neon-dim": "#00FF4166",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -47,10 +50,20 @@ const config: Config = {
           border: "hsl(var(--sidebar-border))",
         },
       },
+      boxShadow: {
+        brutal: "4px 4px 0px 0px #000000",
+        "brutal-sm": "2px 2px 0px 0px #000000",
+        "brutal-lg": "6px 6px 0px 0px #000000",
+        "brutal-neon": "4px 4px 0px 0px #00FF41",
+        "brutal-purple": "4px 4px 0px 0px #7C3AED",
+      },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "0px",
+        md: "0px",
+        sm: "0px",
+      },
+      borderWidth: {
+        brutal: "2px",
       },
     },
   },

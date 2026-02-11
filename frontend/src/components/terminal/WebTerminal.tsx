@@ -20,6 +20,11 @@ function WebTerminal({ instanceId, token }: WebTerminalProps) {
 
       if (destroyed || !containerRef.current) return;
 
+      const termContainer = containerRef.current.querySelector(
+        "[data-terminal]"
+      ) as HTMLDivElement | null;
+      if (!termContainer) return;
+
       const term = new Terminal({
         cursorBlink: true,
         fontSize: 14,
@@ -34,7 +39,7 @@ function WebTerminal({ instanceId, token }: WebTerminalProps) {
 
       const fitAddon = new FitAddon();
       term.loadAddon(fitAddon);
-      term.open(containerRef.current);
+      term.open(termContainer);
       fitAddon.fit();
       termRef.current = term;
 
@@ -77,7 +82,7 @@ function WebTerminal({ instanceId, token }: WebTerminalProps) {
 
       // 리사이즈 대응
       const observer = new ResizeObserver(() => fitAddon.fit());
-      observer.observe(containerRef.current);
+      observer.observe(termContainer);
 
       return () => {
         observer.disconnect();
@@ -96,8 +101,16 @@ function WebTerminal({ instanceId, token }: WebTerminalProps) {
   return (
     <div
       ref={containerRef}
-      className="h-80 w-full overflow-hidden rounded-lg border border-border bg-black"
-    />
+      className="w-full border-2 border-border shadow-brutal dark:shadow-brutal-neon"
+    >
+      <div className="bg-foreground text-background font-retro px-3 py-1 border-b-2 border-border text-sm uppercase">
+        TERMINAL
+      </div>
+      <div
+        data-terminal
+        className="h-80 w-full overflow-hidden bg-black"
+      />
+    </div>
   );
 }
 

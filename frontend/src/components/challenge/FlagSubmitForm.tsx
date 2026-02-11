@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { submitFlag } from "../../services/challenges";
-import type { SubmissionResult } from "../../types/challenge";
+import BrutalInput from "../ui/BrutalInput";
+import BrutalButton from "../ui/BrutalButton";
+import { achievementToast, errorToast } from "../common/Toast";
 
 interface FlagSubmitFormProps {
   challengeId: number;
@@ -10,26 +12,22 @@ interface FlagSubmitFormProps {
 function FlagSubmitForm({ challengeId, isSolved }: FlagSubmitFormProps) {
   const [flag, setFlag] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<SubmissionResult | null>(null);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!flag.trim() || loading) return;
 
     setLoading(true);
-    setResult(null);
     try {
       const res = await submitFlag(challengeId, flag.trim());
-      setResult(res);
       if (res.is_correct) {
+        achievementToast("FLAG ACCEPTED", `+${res.points_earned} PTS`);
         setFlag("");
+      } else {
+        errorToast("WRONG FLAG", res.message);
       }
     } catch {
-      setResult({
-        is_correct: false,
-        message: "제출 중 오류가 발생했습니다.",
-        points_earned: 0,
-      });
+      errorToast("SUBMISSION ERROR", "제출 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
@@ -38,43 +36,30 @@ function FlagSubmitForm({ challengeId, isSolved }: FlagSubmitFormProps) {
   return (
     <div className="mt-6">
       {isSolved && (
-        <div className="mb-4 rounded-md bg-green-50 p-3 text-sm text-green-800 dark:bg-green-900/30 dark:text-green-300">
-          이미 풀이한 문제입니다.
+        <div className="mb-4 border-2 border-neon bg-neon/10 p-3">
+          <span className="font-retro text-sm text-neon">
+            ALREADY SOLVED
+          </span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
+        <BrutalInput
           type="text"
           placeholder="BNDT{...}"
           value={flag}
           onChange={(e) => setFlag(e.target.value)}
           disabled={loading}
-          className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+          className="flex-1 font-mono text-sm"
         />
-        <button
+        <BrutalButton
           type="submit"
+          variant="neon"
           disabled={loading || !flag.trim()}
-          className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {loading ? "..." : "Submit"}
-        </button>
+        </BrutalButton>
       </form>
-
-      {result && (
-        <div
-          className={`mt-3 rounded-md p-3 text-sm ${
-            result.is_correct
-              ? "bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-              : "bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-          }`}
-        >
-          {result.message}
-          {result.is_correct && result.points_earned > 0 && (
-            <span className="ml-2 font-bold">+{result.points_earned} pts</span>
-          )}
-        </div>
-      )}
     </div>
   );
 }

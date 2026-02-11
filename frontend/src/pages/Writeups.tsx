@@ -1,15 +1,21 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
-import { fetchWriteups, upvoteWriteup, type Writeup } from "../services/writeups";
+import {
+  fetchWriteups,
+  upvoteWriteup,
+  type Writeup,
+} from "../services/writeups";
 import MarkdownRenderer from "../components/common/MarkdownRenderer";
-
+import BrutalTabs from "../components/ui/BrutalTabs";
+import BrutalCard from "../components/ui/BrutalCard";
+import PixelLoader from "../components/common/PixelLoader";
 
 type SortOption = "newest" | "oldest" | "most_upvoted";
 
-const sortOptions: { value: SortOption; label: string }[] = [
-  { value: "newest", label: "Newest" },
-  { value: "oldest", label: "Oldest" },
-  { value: "most_upvoted", label: "Most Upvoted" },
+const sortTabs = [
+  { value: "newest", label: "NEWEST" },
+  { value: "oldest", label: "OLDEST" },
+  { value: "most_upvoted", label: "TOP" },
 ];
 
 function Writeups() {
@@ -38,7 +44,9 @@ function Writeups() {
     try {
       const updated = await upvoteWriteup(id);
       setWriteups((prev) =>
-        prev.map((w) => (w.id === id ? { ...w, upvotes: updated.upvotes } : w))
+        prev.map((w) =>
+          w.id === id ? { ...w, upvotes: updated.upvotes } : w
+        )
       );
     } catch {
       // ignore
@@ -50,81 +58,64 @@ function Writeups() {
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Write-ups</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="font-pixel text-lg text-foreground">
+            [KNOWLEDGE_BASE]
+          </h1>
+          <p className="mt-1 font-retro text-xl text-muted-foreground">
             {total} write-ups published
           </p>
         </div>
-
-        {/* Sort */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Sort by:</span>
-          <div className="flex rounded-md border border-input">
-            {sortOptions.map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setSort(opt.value)}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  sort === opt.value
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <BrutalTabs
+          tabs={sortTabs}
+          activeTab={sort}
+          onTabChange={(v) => setSort(v as SortOption)}
+        />
       </div>
 
       {loading ? (
-        <p className="mt-8 text-center text-muted-foreground">Loading...</p>
+        <PixelLoader text="LOADING WRITEUPS" />
       ) : writeups.length === 0 ? (
-        <p className="mt-8 text-center text-muted-foreground">
-          아직 작성된 Write-up이 없습니다.
-        </p>
+        <div className="border-2 border-border p-8 text-center">
+          <p className="font-retro text-xl text-muted-foreground">
+            No write-ups published yet.
+          </p>
+        </div>
       ) : (
-        <div className="mt-6 space-y-4">
+        <div className="space-y-4">
           {writeups.map((w) => {
             const isExpanded = expandedId === w.id;
-            // Extract category from challenge_title pattern or default
             return (
-              <div
-                key={w.id}
-                className="rounded-lg border border-border bg-card p-4 transition-colors hover:border-border/80"
-              >
+              <BrutalCard key={w.id} className="p-5">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-medium">
-                      <Link
-                        to={`/challenges/${w.challenge_id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {w.challenge_title}
-                      </Link>
-                    </h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      by {w.username} &middot;{" "}
+                    <Link
+                      to={`/challenges/${w.challenge_id}`}
+                      className="font-retro text-2xl text-foreground hover:text-neon transition-colors"
+                    >
+                      {w.challenge_title}
+                    </Link>
+                    <p className="mt-1 font-retro text-base text-muted-foreground">
+                      Solution by{" "}
+                      <span className="text-primary">{w.username}</span>{" "}
+                      &middot;{" "}
                       {new Date(w.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleUpvote(w.id)}
-                      className="flex items-center gap-1 rounded-md border border-border px-2 py-1 text-sm transition-colors hover:border-primary hover:text-primary"
-                    >
-                      ▲ {w.upvotes}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleUpvote(w.id)}
+                    className="flex items-center gap-1 border-2 border-border px-3 py-1 font-retro text-base transition-all hover:border-neon hover:text-neon hover:-translate-y-0.5"
+                  >
+                    ▲ {w.upvotes}
+                  </button>
                 </div>
 
-                {/* Content - collapsible */}
+                {/* Content */}
                 <div
-                  className={`mt-3 overflow-hidden ${
-                    isExpanded ? "" : "line-clamp-4"
+                  className={`mt-4 overflow-hidden ${
+                    isExpanded ? "" : "max-h-32"
                   }`}
                 >
                   <MarkdownRenderer content={w.content} />
@@ -132,11 +123,11 @@ function Writeups() {
 
                 <button
                   onClick={() => toggleExpand(w.id)}
-                  className="mt-2 text-xs text-primary hover:underline"
+                  className="mt-3 border-2 border-border px-3 py-1 font-retro text-sm text-foreground hover:bg-muted transition-colors"
                 >
-                  {isExpanded ? "Collapse" : "Read more"}
+                  {isExpanded ? "COLLAPSE" : "READ MORE"}
                 </button>
-              </div>
+              </BrutalCard>
             );
           })}
         </div>

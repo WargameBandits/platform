@@ -1,32 +1,44 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import useAuthStore from "../../stores/authStore";
+import ThemeToggle from "../common/ThemeToggle";
 
 const navItems = [
-  { path: "/", label: "Home", icon: "🏠" },
-  { path: "/challenges", label: "Challenges", icon: "⚔️" },
-  { path: "/scoreboard", label: "Scoreboard", icon: "🏆" },
-  { path: "/writeups", label: "Write-ups", icon: "📝" },
+  { path: "/", label: "Dashboard", marker: ">" },
+  { path: "/challenges", label: "Challenges", marker: ">" },
+  { path: "/scoreboard", label: "Scoreboard", marker: ">" },
+  { path: "/writeups", label: "Write-ups", marker: ">" },
 ];
 
 const authItems = [
-  { path: "/submit-challenge", label: "Submit Challenge", icon: "✏️" },
-  { path: "/my-submissions", label: "My Submissions", icon: "📋" },
+  { path: "/submit-challenge", label: "Submit", marker: "+" },
+  { path: "/my-submissions", label: "My Subs", marker: "#" },
 ];
 
 const adminItems = [
-  { path: "/admin", label: "Dashboard", icon: "📊" },
-  { path: "/admin/reviews", label: "Reviews", icon: "🔍" },
-  { path: "/admin/users", label: "Users", icon: "👥" },
+  { path: "/admin", label: "Admin", marker: "!" },
+  { path: "/admin/reviews", label: "Reviews", marker: "?" },
+  { path: "/admin/users", label: "Users", marker: "@" },
 ];
 
 const ADMIN_ROLES = ["admin", "challenge_author"];
 
 function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const isAdmin = user && ADMIN_ROLES.includes(user.role);
 
-  const renderLink = (item: { path: string; label: string; icon: string }) => {
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const renderLink = (item: {
+    path: string;
+    label: string;
+    marker: string;
+  }) => {
     const isActive =
       item.path === "/"
         ? location.pathname === "/"
@@ -36,27 +48,27 @@ function Sidebar() {
       <Link
         key={item.path}
         to={item.path}
-        className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+        className={`flex items-center gap-3 border-2 px-3 py-2 font-retro text-lg transition-all duration-100 ${
           isActive
-            ? "bg-primary/10 text-primary"
-            : "text-sidebar-foreground hover:bg-accent/10 hover:text-accent"
+            ? "border-border bg-foreground text-neon shadow-brutal-sm dark:shadow-[2px_2px_0px_0px_#00FF41] -translate-x-0.5 -translate-y-0.5"
+            : "border-transparent text-foreground hover:border-border hover:bg-muted"
         }`}
       >
-        <span className="text-base">{item.icon}</span>
+        <span className="font-mono text-xs text-neon">{item.marker}</span>
         {item.label}
       </Link>
     );
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r border-sidebar-border bg-sidebar">
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-60 flex-col border-r-2 border-border bg-background">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="font-pixel text-xs text-primary">WB</span>
-          <span className="text-sm font-bold text-sidebar-foreground">
-            Wargame Bandits
-          </span>
+      <div className="border-b-2 border-border px-4 py-5">
+        <Link to="/" className="block">
+          <span className="font-pixel text-xl text-neon">BNDT</span>
+          <p className="font-retro text-base text-muted-foreground mt-1">
+            WARGAME BANDITS
+          </p>
         </Link>
       </div>
 
@@ -66,46 +78,63 @@ function Sidebar() {
 
         {user && (
           <>
-            <div className="my-3 border-t border-sidebar-border" />
-            <p className="px-3 text-xs font-medium uppercase text-muted-foreground">
+            <div className="my-3 border-t-2 border-border" />
+            <p className="px-3 font-pixel text-[8px] uppercase text-muted-foreground">
               Community
             </p>
-            {authItems.map(renderLink)}
+            <div className="mt-2 space-y-1">
+              {authItems.map(renderLink)}
+            </div>
           </>
         )}
 
         {isAdmin && (
           <>
-            <div className="my-3 border-t border-sidebar-border" />
-            <p className="px-3 text-xs font-medium uppercase text-muted-foreground">
+            <div className="my-3 border-t-2 border-border" />
+            <p className="px-3 font-pixel text-[8px] uppercase text-muted-foreground">
               Admin
             </p>
-            {adminItems.map(renderLink)}
+            <div className="mt-2 space-y-1">
+              {adminItems.map(renderLink)}
+            </div>
           </>
         )}
       </nav>
 
-      {/* Bottom */}
-      <div className="border-t border-sidebar-border px-3 py-4">
+      {/* Bottom: Theme Toggle + User */}
+      <div className="border-t-2 border-border px-3 py-3 space-y-3">
+        <div className="flex justify-end">
+          <ThemeToggle />
+        </div>
+
         {user ? (
-          <Link
-            to="/profile"
-            className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              location.pathname === "/profile"
-                ? "bg-primary/10 text-primary"
-                : "text-sidebar-foreground hover:bg-accent/10 hover:text-accent"
-            }`}
-          >
-            <span className="text-base">👤</span>
-            {user.username}
-          </Link>
+          <div className="border-2 border-border p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center border-2 border-neon bg-neon/20 font-pixel text-xs text-neon">
+                {user.username.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-retro text-base text-foreground truncate">
+                  {user.username}
+                </p>
+                <p className="font-retro text-sm text-muted-foreground">
+                  {user.role.toUpperCase()}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-2 w-full border-2 border-border bg-background px-2 py-1 font-retro text-sm text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            >
+              LOGOUT
+            </button>
+          </div>
         ) : (
           <Link
             to="/login"
-            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground hover:bg-accent/10 hover:text-accent"
+            className="block border-2 border-border px-3 py-2 text-center font-retro text-lg text-foreground hover:bg-neon hover:text-black transition-colors"
           >
-            <span className="text-base">🔑</span>
-            Login
+            LOGIN
           </Link>
         )}
       </div>

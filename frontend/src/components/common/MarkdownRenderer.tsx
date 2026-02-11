@@ -12,13 +12,14 @@ interface MarkdownRendererProps {
 function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
   return (
     <div
-      className={`prose prose-invert prose-sm max-w-none
+      className={`prose dark:prose-invert prose-sm max-w-none
         prose-headings:text-foreground prose-headings:font-bold
         prose-p:text-muted-foreground prose-p:leading-relaxed
-        prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-        prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5
+        prose-a:text-neon dark:prose-a:text-neon prose-a:no-underline hover:prose-a:underline
+        prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5
         prose-code:text-sm prose-code:font-mono prose-code:text-foreground
-        prose-pre:bg-muted prose-pre:border prose-pre:border-border prose-pre:rounded-lg
+        prose-code:border prose-code:border-border
+        prose-pre:bg-muted prose-pre:border-2 prose-pre:border-border
         prose-blockquote:border-primary prose-blockquote:text-muted-foreground
         prose-strong:text-foreground
         prose-ul:text-muted-foreground prose-ol:text-muted-foreground
@@ -27,7 +28,6 @@ function MarkdownRenderer({ content, className = "" }: MarkdownRendererProps) {
         prose-th:text-foreground prose-th:border-border
         prose-td:border-border
         prose-hr:border-border
-        prose-img:rounded-lg
         ${className}`}
     >
       <ReactMarkdown
