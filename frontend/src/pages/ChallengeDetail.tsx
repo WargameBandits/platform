@@ -13,6 +13,7 @@ import BrutalButton from "../components/ui/BrutalButton";
 import BrutalBadge from "../components/ui/BrutalBadge";
 import PixelLoader from "../components/common/PixelLoader";
 import { errorToast } from "../components/common/Toast";
+import { API_BASE_URL } from "../services/api";
 
 function ChallengeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -205,7 +206,7 @@ function ChallengeDetail() {
               {challenge.files.map((file) => (
                 <a
                   key={file}
-                  href={`/files/${challenge.id}/${file}`}
+                  href={`${API_BASE_URL}/challenges/${challenge.id}/files/${file}`}
                   download
                 >
                   <BrutalButton variant="ghost" size="sm" className="border-2 border-border">

@@ -10,6 +10,7 @@
 import asyncio
 import hashlib
 import os
+import shutil
 
 from sqlalchemy import select
 
@@ -19,6 +20,7 @@ from app.models.user import User
 from app.core.security import hash_password
 
 CHALLENGES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "challenges")
+PUBLIC_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public_files")
 
 
 def read_flag(challenge_dir: str) -> str:
@@ -32,6 +34,25 @@ def read_flag(challenge_dir: str) -> str:
 def hash_flag(flag: str) -> str:
     """플래그를 SHA-256으로 해싱한다."""
     return hashlib.sha256(flag.encode()).hexdigest()
+
+
+def copy_challenge_files(challenge_id: int, flag_dir: str, file_list: list[str]) -> None:
+    """챌린지 파일을 공개 서빙 디렉토리로 복사한다."""
+    if not file_list:
+        return
+
+    dst_dir = os.path.join(PUBLIC_FILES_DIR, str(challenge_id))
+    os.makedirs(dst_dir, exist_ok=True)
+
+    # files/ 하위 디렉토리에서 파일 검색
+    files_dir = os.path.join(CHALLENGES_DIR, flag_dir, "files")
+    for fname in file_list:
+        src = os.path.join(files_dir, fname)
+        if os.path.exists(src):
+            shutil.copy2(src, os.path.join(dst_dir, fname))
+            print(f"      -> 파일 복사: {fname}")
+        else:
+            print(f"      -> 파일 없음 (빌드 필요): {fname}")
 
 
 CHALLENGES = [
@@ -302,8 +323,13 @@ async def seed():
             result = await session.execute(
                 select(Challenge).where(Challenge.title == data["title"])
             )
-            if result.scalar_one_or_none():
-                print(f"  [=] 이미 존재: {data['title']}")
+            existing = result.scalar_one_or_none()
+            if existing:
+                # 이미 존재하더라도 파일은 복사 (컨테이너 재시작 시 필요)
+                copy_challenge_files(
+                    existing.id, data["flag_dir"], data.get("files", [])
+                )
+                print(f"  [=] 이미 존재: {data['title']} (파일 재복사)")
                 skipped += 1
                 continue
 
@@ -331,8 +357,14 @@ async def seed():
                 is_active=True,
             )
             session.add(challenge)
+            await session.flush()  # ID 할당을 위해 flush
             created += 1
-            print(f"  [+] 등록: [{data['category'].upper()}] {data['title']}")
+            print(f"  [+] 등록: [{data['category'].upper()}] {data['title']} (id={challenge.id})")
+
+            # 챌린지 파일을 서빙 디렉토리로 복사
+            copy_challenge_files(
+                challenge.id, data["flag_dir"], data.get("files", [])
+            )
 
         await session.commit()
 

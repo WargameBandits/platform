@@ -1,11 +1,14 @@
 """챌린지 일반 유저 API 라우터.
 
-챌린지 목록 조회, 상세 조회, 플래그 제출 기능을 제공한다.
+챌린지 목록 조회, 상세 조회, 플래그 제출, 파일 다운로드 기능을 제공한다.
 """
 
+import os
+from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user_id, get_db_session, get_optional_user_id
@@ -19,6 +22,11 @@ from app.schemas.submission import FlagSubmit, SubmissionResult
 from app.services import challenge_service, scoring_service, notification_service
 
 router = APIRouter(prefix="/challenges", tags=["challenges"])
+
+PUBLIC_FILES_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+    "public_files",
+)
 
 
 @router.get("", response_model=ChallengeListResponse)
@@ -129,4 +137,34 @@ async def submit_flag(
         is_correct=is_correct,
         message="정답입니다!" if is_correct else "틀렸습니다.",
         points_earned=points_earned if is_correct else 0,
+    )
+
+
+@router.get("/{challenge_id}/files/{filename}")
+async def download_challenge_file(
+    challenge_id: int,
+    filename: str,
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+) -> FileResponse:
+    """챌린지 첨부파일을 다운로드한다."""
+    # 챌린지 존재 확인
+    challenge = await challenge_service.get_challenge_by_id(db, challenge_id)
+
+    # 파일명 검증 (path traversal 방지)
+    safe_filename = Path(filename).name
+    if not safe_filename or safe_filename != filename:
+        raise HTTPException(status_code=400, detail="잘못된 파일명입니다.")
+
+    # 챌린지에 등록된 파일인지 확인
+    if not challenge.files or safe_filename not in challenge.files:
+        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
+
+    file_path = os.path.join(PUBLIC_FILES_DIR, str(challenge_id), safe_filename)
+    if not os.path.isfile(file_path):
+        raise HTTPException(status_code=404, detail="파일이 서버에 존재하지 않습니다.")
+
+    return FileResponse(
+        file_path,
+        filename=safe_filename,
+        media_type="application/octet-stream",
     )
