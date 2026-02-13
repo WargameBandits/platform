@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 import Layout from "./components/layout/Layout";
 import AppLayout from "./components/layout/AppLayout";
 import ProtectedRoute from "./components/common/ProtectedRoute";
@@ -33,7 +34,7 @@ function App() {
   }, [fetchUser]);
 
   return (
-    <>
+    <ErrorBoundary>
       <BrutalToaster />
       <Routes>
         {/* Public routes (no sidebar) */}
@@ -63,7 +64,7 @@ function App() {
           </Route>
         </Route>
       </Routes>
-    </>
+    </ErrorBoundary>
   );
 }
 

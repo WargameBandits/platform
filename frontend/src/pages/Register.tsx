@@ -29,7 +29,14 @@ function Register() {
       await register(username, email, password);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.detail ?? "Registration failed.");
+      const detail = err.response?.data?.detail;
+      if (typeof detail === "string") {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        setError(detail.map((d: any) => d.msg ?? String(d)).join(", "));
+      } else {
+        setError("Registration failed.");
+      }
     } finally {
       setLoading(false);
     }

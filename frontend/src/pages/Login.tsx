@@ -21,7 +21,14 @@ function Login() {
       await login(email, password);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.detail ?? "Login failed.");
+      const detail = err.response?.data?.detail;
+      if (typeof detail === "string") {
+        setError(detail);
+      } else if (Array.isArray(detail)) {
+        setError(detail.map((d: any) => d.msg ?? String(d)).join(", "));
+      } else {
+        setError("Login failed.");
+      }
     } finally {
       setLoading(false);
     }
