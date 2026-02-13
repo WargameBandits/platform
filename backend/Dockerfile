@@ -21,15 +21,18 @@ RUN mkdir -p challenges/pwn/example_bof/files \
     challenges/forensics/hidden_message/files \
     public_files
 
-# C 바이너리 컴파일
-RUN gcc -o challenges/pwn/example_bof/files/basic_bof \
+# C 바이너리 컴파일 (에러 출력 유지하여 디버깅 가능)
+RUN ls -la challenges/pwn/example_bof/src/ && \
+    gcc -o challenges/pwn/example_bof/files/basic_bof \
     challenges/pwn/example_bof/src/basic_bof.c \
-    -fno-stack-protector -no-pie -z execstack 2>/dev/null || true
-RUN gcc -o challenges/pwn/format_string/files/format_string \
+    -fno-stack-protector -no-pie || echo "WARN: basic_bof compilation failed"
+RUN ls -la challenges/pwn/format_string/src/ && \
+    gcc -o challenges/pwn/format_string/files/format_string \
     challenges/pwn/format_string/src/format_string.c \
-    -fno-stack-protector -no-pie 2>/dev/null || true
-RUN gcc -o challenges/reversing/baby_rev/files/baby_rev \
-    challenges/reversing/baby_rev/src/baby_rev.c 2>/dev/null || true
+    -fno-stack-protector -no-pie || echo "WARN: format_string compilation failed"
+RUN ls -la challenges/reversing/baby_rev/src/ && \
+    gcc -o challenges/reversing/baby_rev/files/baby_rev \
+    challenges/reversing/baby_rev/src/baby_rev.c || echo "WARN: baby_rev compilation failed"
 
 # 데이터 파일 생성 (encrypted.bin, encoded.txt, message.txt)
 RUN cd challenges/crypto/xor_cipher/files && python encrypt.py || true

@@ -4,7 +4,7 @@
  * gets()로 입력을 받아 스택 버퍼 오버플로우가 발생한다.
  * return address를 win() 함수로 덮어쓰면 플래그를 획득할 수 있다.
  *
- * Compile: gcc -o basic_bof basic_bof.c -fno-stack-protector -no-pie -z execstack
+ * Compile: gcc -o basic_bof basic_bof.c -fno-stack-protector -no-pie
  */
 
 #include <stdio.h>
@@ -30,7 +30,9 @@ void vuln(void) {
     char buf[64];
     printf("Enter your name: ");
     fflush(stdout);
-    gets(buf);  /* vulnerable */
+    /* vulnerable: reads up to 256 bytes into 64-byte buffer */
+    int n = read(0, buf, 256);
+    if (n > 0) buf[n - 1] = '\0';
     printf("Hello, %s!\n", buf);
 }
 
