@@ -3,9 +3,9 @@
 파일 저장, 검증, 삭제를 처리한다.
 """
 
+import asyncio
 import hashlib
 import logging
-import os
 import shutil
 from pathlib import Path
 
@@ -141,7 +141,7 @@ async def upload_multiple_files(
     return results
 
 
-def list_files(challenge_id: int) -> list[str]:
+async def list_files(challenge_id: int) -> list[str]:
     """챌린지에 업로드된 파일 목록을 반환한다.
 
     Args:
@@ -150,13 +150,16 @@ def list_files(challenge_id: int) -> list[str]:
     Returns:
         파일명 리스트.
     """
-    dir_path = UPLOAD_DIR / str(challenge_id)
-    if not dir_path.exists():
-        return []
-    return [f.name for f in dir_path.iterdir() if f.is_file()]
+    def _list() -> list[str]:
+        dir_path = UPLOAD_DIR / str(challenge_id)
+        if not dir_path.exists():
+            return []
+        return [f.name for f in dir_path.iterdir() if f.is_file()]
+
+    return await asyncio.to_thread(_list)
 
 
-def delete_file(challenge_id: int, filename: str) -> None:
+async def delete_file(challenge_id: int, filename: str) -> None:
     """챌린지 파일을 삭제한다.
 
     Args:
@@ -170,11 +173,11 @@ def delete_file(challenge_id: int, filename: str) -> None:
     file_path = UPLOAD_DIR / str(challenge_id) / safe_name
     if not file_path.exists():
         raise BadRequestException("파일을 찾을 수 없습니다.")
-    file_path.unlink()
+    await asyncio.to_thread(file_path.unlink)
     logger.info("파일 삭제: challenge=%d, file=%s", challenge_id, safe_name)
 
 
-def delete_challenge_files(challenge_id: int) -> None:
+async def delete_challenge_files(challenge_id: int) -> None:
     """챌린지의 모든 파일을 삭제한다.
 
     Args:
@@ -182,5 +185,5 @@ def delete_challenge_files(challenge_id: int) -> None:
     """
     dir_path = UPLOAD_DIR / str(challenge_id)
     if dir_path.exists():
-        shutil.rmtree(dir_path)
+        await asyncio.to_thread(shutil.rmtree, dir_path)
         logger.info("챌린지 파일 전체 삭제: challenge=%d", challenge_id)

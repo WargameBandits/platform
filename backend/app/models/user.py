@@ -37,5 +37,5 @@ class User(Base):
 
     # Relationships
     submissions: Mapped[list["Submission"]] = relationship(
-        "Submission", back_populates="user", lazy="selectin"
+        "Submission", back_populates="user", lazy="select"
     )

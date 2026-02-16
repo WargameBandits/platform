@@ -3,22 +3,14 @@
 동적 점수 재계산 및 전체 유저 점수 일괄 갱신을 담당한다.
 """
 
-import asyncio
 import logging
 
-from app.celery_app import celery_app
+from app.tasks import run_async, task_decorator
 
 logger = logging.getLogger(__name__)
 
 
-def _task_decorator(name: str):
-    """celery_app이 None이면 no-op 데코레이터를 반환한다."""
-    if celery_app is not None:
-        return celery_app.task(name=name)
-    return lambda f: f
-
-
-@_task_decorator("app.tasks.scoring_tasks.recalculate_dynamic_scores")
+@task_decorator("app.tasks.scoring_tasks.recalculate_dynamic_scores")
 def recalculate_dynamic_scores() -> dict:
     """모든 챌린지의 동적 점수를 재계산하는 주기적 태스크.
 
@@ -27,7 +19,7 @@ def recalculate_dynamic_scores() -> dict:
     Returns:
         업데이트된 챌린지 수.
     """
-    count = asyncio.run(_recalculate_challenges())
+    count = run_async(_recalculate_challenges())
     return {"updated": count}
 
 
@@ -64,7 +56,7 @@ async def _recalculate_challenges() -> int:
             return 0
 
 
-@_task_decorator("app.tasks.scoring_tasks.recalculate_all_user_scores")
+@task_decorator("app.tasks.scoring_tasks.recalculate_all_user_scores")
 def recalculate_all_user_scores() -> dict:
     """모든 유저의 총 점수를 Submission 기반으로 재계산한다.
 
@@ -73,7 +65,7 @@ def recalculate_all_user_scores() -> dict:
     Returns:
         재계산된 유저 수.
     """
-    count = asyncio.run(_recalculate_users())
+    count = run_async(_recalculate_users())
     return {"recalculated": count}
 
 

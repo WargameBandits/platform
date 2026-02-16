@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import type { Terminal } from "xterm";
 
 interface WebTerminalProps {
   instanceId: number;
@@ -8,7 +9,7 @@ interface WebTerminalProps {
 function WebTerminal({ instanceId, token }: WebTerminalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
-  const termRef = useRef<any>(null);
+  const termRef = useRef<Terminal | null>(null);
 
   useEffect(() => {
     let destroyed = false;

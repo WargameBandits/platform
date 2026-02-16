@@ -1,30 +1,22 @@
 """컨테이너 관련 Celery 비동기 태스크."""
 
-import asyncio
 import logging
 
-from app.celery_app import celery_app
+from app.tasks import run_async, task_decorator
 
 logger = logging.getLogger(__name__)
 
 
-def _task_decorator(name: str):
-    """celery_app이 None이면 no-op 데코레이터를 반환한다."""
-    if celery_app is not None:
-        return celery_app.task(name=name)
-    return lambda f: f
-
-
-@_task_decorator("app.tasks.container_tasks.cleanup_expired_containers")
+@task_decorator("app.tasks.container_tasks.cleanup_expired_containers")
 def cleanup_expired_containers() -> dict:
     """만료된 Docker 인스턴스를 정리하는 주기적 태스크.
 
-    Celery는 동기 환경이므로 asyncio.run으로 비동기 함수를 실행한다.
+    Celery는 동기 환경이므로 run_async로 비동기 함수를 실행한다.
 
     Returns:
         정리 결과 딕셔너리.
     """
-    count = asyncio.run(_cleanup())
+    count = run_async(_cleanup())
     return {"cleaned": count}
 
 

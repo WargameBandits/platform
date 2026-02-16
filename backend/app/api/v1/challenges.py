@@ -9,9 +9,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import get_current_user_id, get_db_session, get_optional_user_id
+from app.api.deps import get_current_user_id, get_db_session, get_optional_user_id, get_redis
+from app.core.rate_limit import check_rate_limit
 from app.models.submission import Submission
 from app.schemas.challenge import (
     ChallengeListResponse,
@@ -54,15 +56,11 @@ async def list_challenges(
     if user_id:
         solved_ids = await challenge_service.get_solved_challenge_ids(db, user_id)
 
-    items = [
-        ChallengeResponse(
-            **{
-                **ChallengeResponse.model_validate(c).model_dump(),
-                "is_solved": c.id in solved_ids,
-            }
-        )
-        for c in challenges
-    ]
+    items = []
+    for c in challenges:
+        resp = ChallengeResponse.model_validate(c)
+        resp.is_solved = c.id in solved_ids
+        items.append(resp)
 
     return ChallengeListResponse(
         items=items, next_cursor=next_cursor, total=total
@@ -85,6 +83,7 @@ async def submit_flag(
     data: FlagSubmit,
     user_id: Annotated[int, Depends(get_current_user_id)],
     db: Annotated[AsyncSession, Depends(get_db_session)],
+    redis: Annotated[Redis | None, Depends(get_redis)],
 ) -> SubmissionResult:
     """플래그를 제출한다."""
     # 이미 풀었는지 확인
@@ -94,6 +93,15 @@ async def submit_flag(
             is_correct=True,
             message="이미 풀이한 문제입니다.",
             points_earned=0,
+        )
+
+    # Rate limiting: 분당 10회 제한 (Redis가 사용 가능한 경우)
+    if redis is not None:
+        await check_rate_limit(
+            redis,
+            f"flag_submit:{user_id}",
+            max_requests=10,
+            window_seconds=60,
         )
 
     # 챌린지 존재 확인

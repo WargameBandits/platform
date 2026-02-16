@@ -10,6 +10,7 @@ import BrutalButton from "../components/ui/BrutalButton";
 import BrutalBadge from "../components/ui/BrutalBadge";
 import PixelLoader from "../components/common/PixelLoader";
 import { errorToast } from "../components/common/Toast";
+import { extractApiError } from "../utils/apiError";
 
 const statusBadgeVariant: Record<string, "neon" | "destructive" | "muted" | "default"> = {
   pending: "muted",
@@ -37,8 +38,8 @@ function MySubmissions() {
     try {
       await deleteSubmission(id);
       load();
-    } catch (err: any) {
-      errorToast("DELETE FAILED", err.response?.data?.detail ?? "삭제에 실패했습니다.");
+    } catch (err: unknown) {
+      errorToast("DELETE FAILED", extractApiError(err, "삭제에 실패했습니다."));
     }
   };
 

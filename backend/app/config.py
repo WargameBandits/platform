@@ -7,6 +7,7 @@ import json
 from functools import lru_cache
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -51,6 +52,41 @@ class Settings(BaseSettings):
 
     # CORS
     CORS_ORIGINS: str = '["http://localhost:3000","http://localhost:80"]'
+
+    @field_validator("CONTAINER_PORT_RANGE_END")
+    @classmethod
+    def validate_port_range(cls, v: int, info) -> int:
+        """포트 범위가 유효한지 검증한다."""
+        start = info.data.get("CONTAINER_PORT_RANGE_START", 30000)
+        if start >= v:
+            raise ValueError("CONTAINER_PORT_RANGE_END는 START보다 커야 합니다.")
+        if not (1024 <= start <= 65535) or not (1024 <= v <= 65535):
+            raise ValueError("포트 범위는 1024~65535 이내여야 합니다.")
+        return v
+
+    @field_validator("JWT_ACCESS_TOKEN_EXPIRE_MINUTES")
+    @classmethod
+    def validate_jwt_access(cls, v: int) -> int:
+        """JWT access 토큰 만료 시간이 양수인지 검증한다."""
+        if v <= 0:
+            raise ValueError("JWT_ACCESS_TOKEN_EXPIRE_MINUTES는 양수여야 합니다.")
+        return v
+
+    @field_validator("JWT_REFRESH_TOKEN_EXPIRE_DAYS")
+    @classmethod
+    def validate_jwt_refresh(cls, v: int) -> int:
+        """JWT refresh 토큰 만료 시간이 양수인지 검증한다."""
+        if v <= 0:
+            raise ValueError("JWT_REFRESH_TOKEN_EXPIRE_DAYS는 양수여야 합니다.")
+        return v
+
+    @field_validator("CONTAINER_CPU_LIMIT")
+    @classmethod
+    def validate_cpu_limit(cls, v: float) -> float:
+        """CPU 제한이 유효한 범위인지 검증한다."""
+        if not (0 < v <= 4):
+            raise ValueError("CONTAINER_CPU_LIMIT는 0 초과 4 이하여야 합니다.")
+        return v
 
     @property
     def cors_origins_list(self) -> list[str]:

@@ -18,6 +18,7 @@ import MySubmissions from "./pages/MySubmissions";
 import AdminDashboard from "./pages/Admin/Dashboard";
 import ChallengeReview from "./pages/Admin/ChallengeReview";
 import UserManagement from "./pages/Admin/UserManagement";
+import NotFound from "./pages/NotFound";
 import useAuthStore from "./stores/authStore";
 import { BrutalToaster } from "./components/common/Toast";
 
@@ -62,6 +63,9 @@ function App() {
             <Route path="/admin/reviews" element={<ChallengeReview />} />
             <Route path="/admin/users" element={<UserManagement />} />
           </Route>
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </ErrorBoundary>

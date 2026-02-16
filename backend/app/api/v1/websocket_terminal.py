@@ -8,11 +8,11 @@ WebSocket을 통해 stdin/stdout을 양방향으로 중계한다.
 import asyncio
 import logging
 
-import docker
 from docker.errors import APIError, NotFound
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy import select
 
+from app.core.docker import get_docker_client
 from app.core.security import decode_token
 from app.database import async_session_factory
 from app.models.container_instance import ContainerInstance
@@ -20,16 +20,6 @@ from app.models.container_instance import ContainerInstance
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-_docker_client: docker.DockerClient | None = None
-
-
-def _get_docker_client() -> docker.DockerClient:
-    """Docker 클라이언트 싱글턴."""
-    global _docker_client
-    if _docker_client is None:
-        _docker_client = docker.from_env()
-    return _docker_client
 
 
 async def _authenticate(token: str) -> int | None:
@@ -96,7 +86,7 @@ async def websocket_terminal(
     await websocket.accept()
 
     # Docker exec 세션 생성
-    client = _get_docker_client()
+    client = get_docker_client()
     try:
         container = client.containers.get(instance.container_id)
     except (NotFound, APIError):

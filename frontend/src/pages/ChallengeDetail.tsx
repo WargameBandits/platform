@@ -14,6 +14,7 @@ import BrutalBadge from "../components/ui/BrutalBadge";
 import PixelLoader from "../components/common/PixelLoader";
 import { errorToast } from "../components/common/Toast";
 import { API_BASE_URL } from "../services/api";
+import { extractApiError } from "../utils/apiError";
 
 function ChallengeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,9 +42,8 @@ function ChallengeDetail() {
     try {
       const inst = await createInstance(challenge.id);
       setInstance(inst);
-    } catch (e: any) {
-      const msg = e.response?.data?.detail ?? "인스턴스 생성에 실패했습니다.";
-      errorToast("INSTANCE ERROR", msg);
+    } catch (e: unknown) {
+      errorToast("INSTANCE ERROR", extractApiError(e, "인스턴스 생성에 실패했습니다."));
     } finally {
       setInstanceLoading(false);
     }

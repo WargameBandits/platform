@@ -7,6 +7,7 @@ import BrutalCard from "../components/ui/BrutalCard";
 import BrutalButton from "../components/ui/BrutalButton";
 import BrutalInput from "../components/ui/BrutalInput";
 import BrutalBadge from "../components/ui/BrutalBadge";
+import { extractApiError } from "../utils/apiError";
 
 const categories = ["pwn", "reversing", "crypto", "web", "forensics", "misc"];
 const difficulties = [
@@ -80,8 +81,8 @@ function SubmitChallenge() {
           .filter(Boolean),
       });
       navigate("/my-submissions");
-    } catch (err: any) {
-      setError(err.response?.data?.detail ?? "제출에 실패했습니다.");
+    } catch (err: unknown) {
+      setError(extractApiError(err, "제출에 실패했습니다."));
     } finally {
       setLoading(false);
     }

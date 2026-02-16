@@ -1,18 +1,24 @@
 """API 의존성 모듈.
 
-인증, DB 세션 등 공통 의존성을 정의한다.
+인증, DB 세션, Redis 등 공통 의존성을 정의한다.
 """
+
+from collections.abc import AsyncGenerator
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.core.exceptions import UnauthorizedException
 from app.core.security import decode_token
 from app.database import get_db
 
 security_scheme = HTTPBearer()
 optional_security_scheme = HTTPBearer(auto_error=False)
+
+_redis_client: Redis | None = None
 
 
 async def get_current_user_id(
@@ -62,7 +68,7 @@ async def get_optional_user_id(
     return int(user_id)
 
 
-async def get_db_session() -> AsyncSession:
+async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
     """DB 세션 의존성 래퍼.
 
     Yields:
@@ -70,3 +76,25 @@ async def get_db_session() -> AsyncSession:
     """
     async for session in get_db():
         yield session
+
+
+async def get_redis() -> AsyncGenerator[Redis, None]:
+    """Redis 비동기 클라이언트를 제공하는 의존성 함수.
+
+    싱글턴 패턴으로 연결을 재사용한다.
+    REDIS_URL이 설정되지 않으면 None을 반환한다.
+
+    Yields:
+        Redis 비동기 클라이언트 또는 None.
+    """
+    global _redis_client
+    settings = get_settings()
+    if not settings.REDIS_URL:
+        yield None  # type: ignore[arg-type]
+        return
+    if _redis_client is None:
+        _redis_client = Redis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+        )
+    yield _redis_client

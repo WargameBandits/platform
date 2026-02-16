@@ -7,12 +7,12 @@ import logging
 import random
 from datetime import UTC, datetime, timedelta
 
-import docker
 from docker.errors import APIError, NotFound
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
+from app.core.docker import get_docker_client
 from app.core.exceptions import (
     BadRequestException,
     ConflictException,
@@ -24,21 +24,6 @@ from app.models.container_instance import ContainerInstance
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
-
-# Docker 클라이언트 (동기 — Docker SDK는 async 미지원)
-_docker_client: docker.DockerClient | None = None
-
-
-def _get_docker_client() -> docker.DockerClient:
-    """Docker 클라이언트 싱글턴을 반환한다.
-
-    Returns:
-        DockerClient 인스턴스.
-    """
-    global _docker_client
-    if _docker_client is None:
-        _docker_client = docker.from_env()
-    return _docker_client
 
 
 async def _get_used_ports(db: AsyncSession) -> set[int]:
@@ -151,7 +136,7 @@ async def create_instance(
     port = await _allocate_port(db)
 
     # Docker 컨테이너 생성
-    client = _get_docker_client()
+    client = get_docker_client()
     expires_at = datetime.now(UTC) + timedelta(seconds=settings.CONTAINER_TIMEOUT_SECONDS)
 
     # 카테고리별 tmpfs 설정 (web은 DB 쓰기 허용)
@@ -227,7 +212,7 @@ async def stop_instance(
         raise ForbiddenException("본인의 인스턴스만 중지할 수 있습니다.")
 
     # Docker 컨테이너 중지/제거
-    client = _get_docker_client()
+    client = get_docker_client()
     try:
         container = client.containers.get(instance.container_id)
         container.stop(timeout=5)
@@ -271,7 +256,7 @@ async def get_instance_status(
 
     # Docker 실제 상태와 동기화
     if instance.status == "running":
-        client = _get_docker_client()
+        client = get_docker_client()
         try:
             container = client.containers.get(instance.container_id)
             if container.status != "running":
@@ -323,7 +308,7 @@ async def cleanup_expired(db: AsyncSession) -> int:
     )
     expired = list(result.scalars().all())
 
-    client = _get_docker_client()
+    client = get_docker_client()
     count = 0
 
     for instance in expired:
