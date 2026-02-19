@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 UPLOAD_DIR = Path("/var/www/challenge-files")
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
 
+
+REPO_BACKEND_DIR = Path(__file__).resolve().parents[2]
+CHALLENGES_ROOT_DIR = REPO_BACKEND_DIR / "challenges"
+
 ALLOWED_EXTENSIONS = {
     ".c", ".cpp", ".h", ".py", ".js", ".ts", ".go", ".rs", ".java",
     ".rb", ".php", ".sh", ".pl", ".asm", ".s",
@@ -187,3 +191,52 @@ async def delete_challenge_files(challenge_id: int) -> None:
     if dir_path.exists():
         await asyncio.to_thread(shutil.rmtree, dir_path)
         logger.info("챌린지 파일 전체 삭제: challenge=%d", challenge_id)
+
+
+async def stage_release_files(
+    challenge_id: int,
+    source_dir: str,
+    file_list: list[str],
+) -> list[str]:
+    """챌린지 소스 디렉토리에서 배포 대상 파일만 공개 디렉토리로 복사한다.
+
+    source_dir는 backend/challenges 기준 상대 경로(예: pwn/example_bof)여야 한다.
+    """
+    if not file_list:
+        return []
+
+    normalized_source = Path(source_dir.strip().strip("/"))
+    if not normalized_source.parts or ".." in normalized_source.parts:
+        raise BadRequestException("유효하지 않은 소스 경로입니다.")
+
+    source_root = (CHALLENGES_ROOT_DIR / normalized_source).resolve()
+    if not source_root.is_dir() or CHALLENGES_ROOT_DIR.resolve() not in source_root.parents:
+        raise BadRequestException("챌린지 소스 디렉토리를 찾을 수 없습니다.")
+
+    dst_dir = _ensure_challenge_dir(challenge_id)
+    copied: list[str] = []
+
+    for filename in file_list:
+        safe_name = Path(filename).name
+        if safe_name != filename or not safe_name:
+            raise BadRequestException(f"유효하지 않은 파일명입니다: {filename}")
+
+        _validate_extension(safe_name)
+        candidates = [
+            source_root / "src" / safe_name,
+            source_root / "files" / safe_name,
+        ]
+        src_path = next((candidate for candidate in candidates if candidate.is_file()), None)
+        if src_path is None:
+            logger.warning(
+                "배포 파일을 찾지 못함: challenge=%d source=%s file=%s",
+                challenge_id,
+                source_root,
+                safe_name,
+            )
+            continue
+
+        await asyncio.to_thread(shutil.copy2, src_path, dst_dir / safe_name)
+        copied.append(safe_name)
+
+    return copied
