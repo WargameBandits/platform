@@ -206,7 +206,7 @@ function ChallengeDetail() {
               {challenge.files.map((file) => (
                 <a
                   key={file}
-                  href={`${API_BASE_URL}/challenges/${challenge.id}/files/${file}`}
+                  href={`${API_BASE_URL}/challenges/${challenge.id}/files/${encodeURIComponent(file)}`}
                   download
                 >
                   <BrutalButton variant="ghost" size="sm" className="border-2 border-border">

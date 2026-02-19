@@ -12,7 +12,7 @@ from app.schemas.challenge import (
     ChallengeCreate,
     ChallengeUpdate,
 )
-from app.services import challenge_service
+from app.services import challenge_service, file_service
 
 router = APIRouter()
 
@@ -113,6 +113,25 @@ async def import_challenges_yaml(
             is_active=item.get("is_active", True),
         )
         challenge = await challenge_service.create_challenge(db, data, user_id)
+
+        source_dir = item.get("source_dir")
+        docker_image = item.get("docker", {}).get("image") if item.get("docker") else None
+        if not source_dir and isinstance(docker_image, str) and docker_image.startswith("challenges/"):
+            source_dir = docker_image.removeprefix("challenges/")
+
+        if source_dir and data.files:
+            copied_files = await file_service.stage_release_files(
+                challenge.id,
+                source_dir,
+                data.files,
+            )
+            if copied_files != (data.files or []):
+                await challenge_service.update_challenge(
+                    db,
+                    challenge.id,
+                    ChallengeUpdate(files=copied_files if copied_files else None),
+                )
+
         created.append(challenge.id)
 
     return {"imported": len(created), "challenge_ids": created}

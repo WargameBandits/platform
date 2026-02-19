@@ -21,11 +21,11 @@ from app.schemas.challenge import (
     CategoryEnum,
 )
 from app.schemas.submission import FlagSubmit, SubmissionResult
-from app.services import challenge_service, scoring_service, notification_service
+from app.services import challenge_service, file_service, notification_service, scoring_service
 
 router = APIRouter(prefix="/challenges", tags=["challenges"])
 
-PUBLIC_FILES_DIR = os.path.join(
+LEGACY_PUBLIC_FILES_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
     "public_files",
 )
@@ -167,12 +167,18 @@ async def download_challenge_file(
     if not challenge.files or safe_filename not in challenge.files:
         raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
 
-    file_path = os.path.join(PUBLIC_FILES_DIR, str(challenge_id), safe_filename)
-    if not os.path.isfile(file_path):
+    upload_file_path = file_service.UPLOAD_DIR / str(challenge_id) / safe_filename
+    legacy_file_path = Path(LEGACY_PUBLIC_FILES_DIR) / str(challenge_id) / safe_filename
+
+    if upload_file_path.is_file():
+        serve_path = upload_file_path
+    elif legacy_file_path.is_file():
+        serve_path = legacy_file_path
+    else:
         raise HTTPException(status_code=404, detail="파일이 서버에 존재하지 않습니다.")
 
     return FileResponse(
-        file_path,
+        str(serve_path),
         filename=safe_filename,
         media_type="application/octet-stream",
     )
