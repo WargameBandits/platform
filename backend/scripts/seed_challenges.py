@@ -2,7 +2,7 @@
 
 모든 카테고리의 테스트 챌린지를 DB에 등록한다.
 이미 같은 제목의 챌린지가 있으면 건너뛴다.
-플래그는 각 챌린지 디렉토리의 flag.txt에서 읽어온다.
+플래그는 환경변수 또는 각 챌린지 디렉토리의 flag.txt에서 읽어온다.
 
 실행: python -m scripts.seed_challenges
 """
@@ -24,11 +24,24 @@ PUBLIC_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "pub
 
 
 def read_flag(challenge_dir: str) -> str:
-    """챌린지 디렉토리의 flag.txt에서 플래그를 읽는다."""
+    """챌린지 플래그를 환경변수 또는 flag.txt에서 읽는다.
+
+    우선순위:
+    1) CHALLENGE_FLAG_<CATEGORY>_<NAME> 환경변수
+    2) 챌린지 디렉토리의 flag.txt
+    """
+    env_key = f"CHALLENGE_FLAG_{challenge_dir.upper().replace('/', '_')}"
+    env_flag = os.getenv(env_key, "").strip()
+    if env_flag:
+        return env_flag
+
     flag_path = os.path.join(CHALLENGES_DIR, challenge_dir, "flag.txt")
-    if not os.path.exists(flag_path):
-        raise FileNotFoundError(f"flag.txt not found: {flag_path}")
-    return open(flag_path, "r").read().strip()
+    if os.path.exists(flag_path):
+        return open(flag_path, "r").read().strip()
+
+    raise FileNotFoundError(
+        f"flag not found for {challenge_dir}: set {env_key} or create {flag_path}"
+    )
 
 
 def hash_flag(flag: str) -> str:
