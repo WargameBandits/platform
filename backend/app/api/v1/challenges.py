@@ -73,7 +73,7 @@ async def get_challenge(
     db: Annotated[AsyncSession, Depends(get_db_session)],
 ) -> ChallengeResponse:
     """챌린지 상세 정보를 조회한다."""
-    challenge = await challenge_service.get_challenge_by_id(db, challenge_id)
+    challenge = await challenge_service.get_public_challenge_by_id(db, challenge_id)
     return ChallengeResponse.model_validate(challenge)
 
 
@@ -105,7 +105,7 @@ async def submit_flag(
         )
 
     # 챌린지 존재 확인
-    challenge = await challenge_service.get_challenge_by_id(db, challenge_id)
+    challenge = await challenge_service.get_public_challenge_by_id(db, challenge_id)
 
     # 플래그 검증
     is_correct = await challenge_service.verify_flag(db, challenge_id, data.flag)

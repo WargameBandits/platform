@@ -134,6 +134,36 @@ async def get_challenge_by_id(db: AsyncSession, challenge_id: int) -> Challenge:
     return challenge
 
 
+async def get_public_challenge_by_id(
+    db: AsyncSession, challenge_id: int
+) -> Challenge:
+    """공개 가능한 챌린지를 ID로 조회한다.
+
+    공개 챌린지는 활성 상태이고 승인 완료(review_status == "approved")여야 한다.
+
+    Args:
+        db: DB 세션.
+        challenge_id: 챌린지 ID.
+
+    Returns:
+        Challenge 객체.
+
+    Raises:
+        NotFoundException: 공개 가능한 챌린지가 존재하지 않을 때.
+    """
+    result = await db.execute(
+        select(Challenge).where(
+            Challenge.id == challenge_id,
+            Challenge.is_active.is_(True),
+            Challenge.review_status == "approved",
+        )
+    )
+    challenge = result.scalar_one_or_none()
+    if challenge is None:
+        raise NotFoundException("챌린지를 찾을 수 없습니다.")
+    return challenge
+
+
 async def list_challenges(
     db: AsyncSession,
     *,
