@@ -119,7 +119,7 @@ async def import_challenges_yaml(
         if not source_dir and isinstance(docker_image, str) and docker_image.startswith("challenges/"):
             source_dir = docker_image.removeprefix("challenges/")
 
-        if source_dir and data.files:
+        if data.is_active and source_dir and data.files:
             copied_files = await file_service.stage_release_files(
                 challenge.id,
                 source_dir,
