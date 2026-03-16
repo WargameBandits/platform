@@ -10,6 +10,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from redis.asyncio import Redis
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user_id, get_db_session, get_optional_user_id, get_redis
@@ -139,7 +140,17 @@ async def submit_flag(
                 db, user_id, challenge.title, challenge.id
             )
 
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError as exc:
+        await db.rollback()
+        if is_correct and "uq_submissions_user_challenge_correct" in str(exc.orig):
+            return SubmissionResult(
+                is_correct=True,
+                message="이미 풀이한 문제입니다.",
+                points_earned=0,
+            )
+        raise
 
     return SubmissionResult(
         is_correct=is_correct,

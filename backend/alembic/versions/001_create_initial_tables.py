@@ -116,6 +116,13 @@ def upgrade() -> None:
     )
     op.create_index("ix_submissions_user_id", "submissions", ["user_id"])
     op.create_index("ix_submissions_challenge_id", "submissions", ["challenge_id"])
+    op.create_index(
+        "uq_submissions_user_challenge_correct",
+        "submissions",
+        ["user_id", "challenge_id"],
+        unique=True,
+        postgresql_where=sa.text("is_correct = true"),
+    )
 
     # === container_instances ===
     op.create_table(
