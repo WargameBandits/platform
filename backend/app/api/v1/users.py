@@ -49,7 +49,11 @@ async def get_my_stats(
 async def get_my_heatmap(
     user_id: Annotated[int, Depends(get_current_user_id)],
     db: Annotated[AsyncSession, Depends(get_db_session)],
-    year: int = Query(default_factory=lambda: datetime.now(UTC).year),
+    year: int = Query(
+        default_factory=lambda: datetime.now(UTC).year,
+        ge=1,
+        le=9999,
+    ),
 ) -> HeatmapResponse:
     """현재 유저의 활동 히트맵을 조회한다."""
     heatmap = await dashboard_service.get_activity_heatmap(
