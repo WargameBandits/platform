@@ -169,6 +169,10 @@ async def download_challenge_file(
     # 챌린지 존재 확인
     challenge = await challenge_service.get_challenge_by_id(db, challenge_id)
 
+    # 공개된 챌린지 파일만 다운로드 허용
+    if not challenge.is_active or challenge.review_status != "approved":
+        raise HTTPException(status_code=404, detail="파일을 찾을 수 없습니다.")
+
     # 파일명 검증 (path traversal 방지)
     safe_filename = Path(filename).name
     if not safe_filename or safe_filename != filename:
